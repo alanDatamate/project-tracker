@@ -2,16 +2,32 @@ import React, { useEffect, useState } from "react";
 import JiraIssueList from "./JiraIssueList";
 import ClientIssueTable from "./clientWiseReport/ClientIssueList";
 import ResourceWiseIssueList from "./resourceWise/ResourceWiseIssueList";
-import { setProject } from "../redux/reducers/filterSlice";
+import { setProject, setProjects } from "../redux/reducers/filterSlice";
 import { useDispatch } from "react-redux";
 import { setIssues } from "../redux/reducers/issuesSlice";
+import TimeSheet from "./timeSheet/TimeSheet";
+import { invoke } from "@forge/bridge";
 
 const CustomReportsPage = () => {
-  const [activeTab, setActiveTab] = useState("dev-end-date");
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await invoke("getProjects");
+        dispatch(setProjects(response.projects));
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      }
+    };
+    fetchProjects();
+  }, [dispatch]);
+  const [activeTab, setActiveTab] = useState("time-sheet");
 
   const renderActiveTab = () => {
     switch (activeTab) {
+      case "time-sheet":
+        return <TimeSheet />
       case "dev-end-date":
         return <JiraIssueList />;
       case "client-wise":
@@ -28,10 +44,10 @@ const CustomReportsPage = () => {
         );
     }
   };
-  useEffect(()=>{
-   dispatch(setProject("All"))
-   dispatch(setIssues([]))
-  },[activeTab])
+  useEffect(() => {
+    dispatch(setProject("All"))
+    dispatch(setIssues([]))
+  }, [activeTab])
 
   return (
     <div className="min-h-screen bg-white flex">
@@ -41,31 +57,28 @@ const CustomReportsPage = () => {
         <div className="space-y-2 text-sm">
           <button
             onClick={() => setActiveTab("dev-end-date")}
-            className={`w-full text-left px-2 py-1 rounded-lg font-medium ${
-              activeTab === "dev-end-date"
+            className={`w-full text-left px-2 py-1 rounded-lg font-medium ${activeTab === "dev-end-date"
                 ? "text-blue-600 font-semibold"
                 : ""
-            }`}
+              }`}
           >
             Delayed Tasks
           </button>
           <button
             onClick={() => setActiveTab("client-wise")}
-            className={`w-full text-left px-2 py-1 rounded-lg font-medium ${
-              activeTab === "client-wise"
+            className={`w-full text-left px-2 py-1 rounded-lg font-medium ${activeTab === "client-wise"
                 ? "text-blue-600 font-semibold"
                 : ""
-            }`}
+              }`}
           >
             ClientWise
           </button>
           <button
             onClick={() => setActiveTab("resource-wise")}
-            className={`w-full text-left px-2 py-1 rounded-lg font-medium ${
-              activeTab === "resource-wise"
-                ?"text-blue-600 font-semibold"
+            className={`w-full text-left px-2 py-1 rounded-lg font-medium ${activeTab === "resource-wise"
+                ? "text-blue-600 font-semibold"
                 : ""
-            }`}
+              }`}
           >
             ResourceWise
           </button>

@@ -65,24 +65,29 @@ const ProjectFilterWithCheckBox = ({
   const filteredProjects = projectOptions.filter((project) =>
     project.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
   );
+  const clearAllSelection = () => {
+    setSlectedProjectslist([]);
+    onChange([]);
+  };
 
   return (
-    <div ref={dropdownRef} className="relative w-72">
+    <div ref={dropdownRef} className="relative text-sm font-semibold">
       <button
         onClick={toggleDropdown}
-        className={`w-full px-2 py-2 text-left bg-white rounded-lg hover:bg-gray-300 focus:outline-none flex items-center 
-          ${isOpen ? "border-b-2 border-blue-500" : ""}`}
+        className={`px-2 py-1 text-left bg-gray-200 rounded-sm hover:bg-gray-300 focus:outline-none flex items-center 
+          ${isOpen ? "bg-blue-400 text-blue-400" : ""}`}
+        type="button"
       >
         <span className="mr-1">{displayText}</span>
-        <RiArrowDropDownLine size={25} />
+        <RiArrowDropDownLine size={20} />
       </button>
       {isOpen && (
-        <div className="absolute z-10 mt-1 left-0 w-full bg-white border border-gray-300 rounded-lg shadow-lg">
-          <div className="px-4 py-2">
+        <div className="absolute z-10 mt-1 left-0 w-[290px] bg-white border border-gray-300 rounded-sm">
+          <div className="py-2 w-full">
             <input
               type="text"
               placeholder="Search Projects"
-              className="w-full px-4 py-2 border border-gray-300 rounded"
+              className="w-full py-2 border-b-2 border-b-gray-300 rounded-xs placeholder:font-normal placeholder:pl-3"
               value={searchQuery}
               onChange={handleSearchChange}
             />
@@ -95,23 +100,40 @@ const ProjectFilterWithCheckBox = ({
                 filteredProjects.map((project, index) => (
                   <li
                     key={index}
-                    className="px-4 py-2 cursor-pointer hover:bg-blue-50 transition-all flex items-center"
+                    className="px-2.5 py-2 cursor-pointer hover:bg-blue-50 transition-all flex items-center"
                   >
                     <input
                       type="checkbox"
-                      className="mr-2"
+                      className="mr-2 cursor-pointer"
                       checked={selectedProjectlist.some(
                         (p) => p.key === project.key
                       )}
                       onChange={() => handleCheckboxChange(project)}
                     />
-                    {project.name}
+                    <div className="flex items-center ">
+                      <img
+                         className="w-4 h-4 rounded-sm object-cover"
+                        src={project?.avatarUrls?.["48x48"]}
+                        alt={project?.name || "Project Avatar"}
+                        loading="lazy"
+                      />
+                      <span className="ml-2 text-[13px] font-semibold text-gray-700">{project?.name || "Unnamed Project"}</span>
+                    </div>
+
                   </li>
                 ))
               ) : (
                 <li className="px-4 py-2 text-gray-500">No projects found</li>
               )}
             </ul>
+          )}
+          {selectedProjectlist?.length > 0 && selectedProjectlist.length > 0 && (
+            <p
+              onClick={clearAllSelection}
+              className="px-4 py-2 text-red-500 hover:bg-red-50 cursor-pointer"
+            >
+              Clear All
+            </p>
           )}
         </div>
       )}
