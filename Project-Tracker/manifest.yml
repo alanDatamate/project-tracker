@@ -1,0 +1,28 @@
+modules:
+  jira:globalPage:
+    - key: project-tracker
+      resource: main
+      resolver:
+        function: resolver
+      title: Project Tracker
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: static/tracker/build
+app:
+  runtime:
+    name: nodejs20.x
+  id: ari:cloud:ecosystem::app/0b699dd2-0100-4f06-8b38-ac8da1337063
+permissions:
+  scopes:
+    - read:jira-work
+    - write:jira-work
+    - read:jira-user
+    - read:avatar:jira
+    - 'manage:jira-configuration'
+  external:
+    images:
+      - '*.giphy.com'  
+
