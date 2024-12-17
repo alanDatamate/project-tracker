@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 import { setIssues } from "../redux/reducers/issuesSlice";
 import TimeSheet from "./timeSheet/TimeSheet";
 import { invoke } from "@forge/bridge";
+import ResourceWiseCalender from "./resourceWise/calender/ResousrceWiseCalander";
 
 const CustomReportsPage = () => {
   const dispatch = useDispatch();
@@ -22,7 +23,7 @@ const CustomReportsPage = () => {
     };
     fetchProjects();
   }, [dispatch]);
-  const [activeTab, setActiveTab] = useState("time-sheet");
+  const [activeTab, setActiveTab] = useState("dev-end-date");
 
   const renderActiveTab = () => {
     switch (activeTab) {
@@ -34,6 +35,8 @@ const CustomReportsPage = () => {
         return <ClientIssueTable />;
       case "resource-wise":
         return <ResourceWiseIssueList />;
+      case "resource-wise-calender":
+        return <ResourceWiseCalender />;
       default:
         return (
           <div className="p-4 text-center">
@@ -81,6 +84,15 @@ const CustomReportsPage = () => {
               }`}
           >
             ResourceWise
+          </button>
+          <button
+            onClick={() => setActiveTab("resource-wise-calender")}
+            className={`w-full text-left px-2 py-1 rounded-lg font-medium ${activeTab === "resource-wise-calenderbv "
+                ? "text-blue-600 font-semibold"
+                : ""
+              }`}
+          >
+            ResourceWise-calender
           </button>
         </div>
       </aside>
