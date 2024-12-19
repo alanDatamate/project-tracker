@@ -104,7 +104,7 @@ const ResourceWiseCalendar = () => {
 
   return (
     <div className="p-4 bg-gray-100">
-      <div className="mb-[20px] flex">
+      <div className="mb-[20px] flex gap-2">
         <CustomDropdown
           option={"Project"}
           options={projects}
@@ -116,24 +116,25 @@ const ResourceWiseCalendar = () => {
           onChange={handleAssigneeChange}
           project={project}
         />
-
-        <label style={{ marginRight: "10px" }}>Start Date:</label>
+        <AssigneeFilterDropdown
+          options={assignees}
+          onChange={handleAssigneeChange}
+          project={project}
+        />
         <input
           type="date"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
-          style={{ marginRight: "20px" }}
+          className="rounded-md p-1 text-sm"
         />
-
-        <label style={{ marginRight: "10px" }}>End Date:</label>
+        <label className="m-0.5">TO</label>
         <input
           type="date"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
-          style={{ marginRight: "20px" }}
+          className="mr-4 rounded-md p-1 text-sm"
         />
-
-        <button onClick={handleGenerate} className="px-3 py-2 bg-green-600 hover:bg-green-700">
+        <button onClick={handleGenerate} className="px-2 py-1 text-sm bg-blue-600 hover:bg-blue-700 rounded-sm text-white">
           Generate
         </button>
       </div>

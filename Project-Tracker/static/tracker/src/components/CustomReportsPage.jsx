@@ -61,38 +61,38 @@ const CustomReportsPage = () => {
           <button
             onClick={() => setActiveTab("dev-end-date")}
             className={`w-full text-left px-2 py-1 rounded-lg font-medium ${activeTab === "dev-end-date"
-                ? "text-blue-600 font-semibold"
+                ? "text-blue-600 "
                 : ""
               }`}
           >
-            Delayed Tasks
+            delayed-tasks
           </button>
           <button
             onClick={() => setActiveTab("client-wise")}
             className={`w-full text-left px-2 py-1 rounded-lg font-medium ${activeTab === "client-wise"
-                ? "text-blue-600 font-semibold"
+                ? "text-blue-600 "
                 : ""
               }`}
           >
-            ClientWise
+            client-wise
           </button>
           <button
             onClick={() => setActiveTab("resource-wise")}
             className={`w-full text-left px-2 py-1 rounded-lg font-medium ${activeTab === "resource-wise"
-                ? "text-blue-600 font-semibold"
+                ? "text-blue-600 "
                 : ""
               }`}
           >
-            ResourceWise
+            resource-wise
           </button>
           <button
             onClick={() => setActiveTab("resource-wise-calender")}
-            className={`w-full text-left px-2 py-1 rounded-lg font-medium ${activeTab === "resource-wise-calenderbv "
-                ? "text-blue-600 font-semibold"
+            className={`w-full text-left px-2 py-1 rounded-lg font-medium ${activeTab === "resource-wise-calender"
+                ? "text-blue-600"
                 : ""
               }`}
           >
-            ResourceWise-calender
+            Resource-wise-calender
           </button>
         </div>
       </aside>
