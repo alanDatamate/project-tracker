@@ -13,6 +13,7 @@ resolver.define('getProjects', async () => {
     return { error: error.message || "Failed to fetch projects" };
   }
 });
+
 /** Fetch all users assigned for project */
 resolver.define("getAssigneesForProject", async (req) => {
   const { key } = req.payload;

@@ -1,12 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import CustomDropdown from "../../Filters/CustomDropdown";
+import { useSelector } from "react-redux";
+import { invoke } from "@forge/bridge";
+import AssigneeFilterDropdown from "../../Filters/AssigneeFilter";
+
 
 const localizer = momentLocalizer(moment);
 
 const ResourceWiseCalendar = () => {
-  // Dummy task data with busy ranges
+  const { projects } = useSelector((state) => state.filters);
+  const handleProjectChange = (value) => {
+    setProject(value)
+  };
   const dummyTasks = [
     {
       id: 1,
@@ -36,9 +44,9 @@ const ResourceWiseCalendar = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [busyRanges, setBusyRanges] = useState([]);
+  const [assignees, setAssignees] = useState([]);
+  const [project, setProject] = useState("");
 
-  // Unique list of assignees
-  const assignees = [...new Set(dummyTasks.map((task) => task.assignee))];
 
   // Function to filter tasks and set busy ranges
   const handleGenerate = () => {
@@ -74,36 +82,40 @@ const ResourceWiseCalendar = () => {
       return { style: { backgroundColor: "lightblue" } }; // Free days
     }
   };
+  useEffect(() => {
+    if (project) {
+      const getAssigneesForProject = async () => {
+        try {
+          const response = await invoke("getAssigneesForProject", {
+            key: project,
+          });
+          setAssignees(response.assignees);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+      getAssigneesForProject();
+    }
+  }, [project]);
+
+  const handleAssigneeChange = (assignee) => {
+
+  };
 
   return (
     <div className="p-4 bg-gray-100">
-      <h2 className="mb-4">Resource-Wise Calendar</h2>
-
-      {/* Filters */}
-      <div style={{ marginBottom: "20px" }}>
-        <label style={{ marginRight: "10px" }}>Assignee:</label>
-        <select
-          value={assignee}
-          onChange={(e) => setAssignee(e.target.value)}
-          style={{ marginRight: "20px" }}
-        >
-          <option value="">Select Assignee</option>
-          {assignees.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
-
-        <label style={{ marginRight: "10px" }}>Date Field:</label>
-        <select
-          value={dateField}
-          onChange={(e) => setDateField(e.target.value)}
-          style={{ marginRight: "20px" }}
-        >
-          <option value="dev">Dev Dates</option>
-          <option value="qa">QA Dates</option>
-        </select>
+      <div className="mb-[20px] flex">
+        <CustomDropdown
+          option={"Project"}
+          options={projects}
+          onChange={handleProjectChange}
+          disableDispatch={true}
+        />
+        <AssigneeFilterDropdown
+          options={assignees}
+          onChange={handleAssigneeChange}
+          project={project}
+        />
 
         <label style={{ marginRight: "10px" }}>Start Date:</label>
         <input
@@ -121,19 +133,17 @@ const ResourceWiseCalendar = () => {
           style={{ marginRight: "20px" }}
         />
 
-        <button onClick={handleGenerate} style={{ padding: "5px 10px" }}>
+        <button onClick={handleGenerate} className="px-3 py-2 bg-green-600 hover:bg-green-700">
           Generate
         </button>
       </div>
-
-      {/* Calendar */}
       <Calendar
         localizer={localizer}
-        events={[]} // No need for actual events, we color the columns
+        events={[]}
         startAccessor="start"
         endAccessor="end"
         style={{ height: "500px" }}
-        dayPropGetter={dayPropGetter} // Custom styling for day columns
+        dayPropGetter={dayPropGetter}
       />
     </div>
   );

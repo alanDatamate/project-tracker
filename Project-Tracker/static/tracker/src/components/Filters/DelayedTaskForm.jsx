@@ -118,100 +118,97 @@ const DelayedTaskForm = () => {
   }, [project]);
 
   return (
-    <>
-      <form
-        onSubmit={handleSubmit(handleSubmitForm)}
-        className="flex flex-wrap items-center gap-2 w-full text-sm font-medium text-gray-800"
-      >
-        <AssigneeFilterDropdown
-          options={assignees}
-          onChange={handleAssigneeChange}
-          project={project}
-        />
-        <div className="flex items-center justify-center mr-1">
-          <span className="font-medium text-sm">FROM</span>
-        </div>
-        <div className="w-[115px]">
-          <input
-            id="startDate"
-            {...register("startDate", {
-              required: "Start Date is required",
-            })}
-            type="date"
-            className=" w-full p-1.5 border rounded-lg focus:outline-none border-gray-300"
-          />
-        </div>
-        <div className="flex items-center justify-center sm:w-1">
-          <span className="font-medium text-sm">TO</span>
-        </div>
-        <div className="w-[115px]">
-          <input
-            id="endDate"
-            {...register("endDate", { required: "End Date is required" })}
-            type="date"
-            className="w-full p-1.5 border rounded-lg focus:outline-none border-gray-300"
-          />
-        </div>
-        <div className="w-32">
-          <select
-            id="status"
-            {...register("status", { required: "Status is required" })}
-            className="w-full p-2 focus:outline-none border-gray-300"
-          >
-            <option value="">Lookup Status</option>
-            {projectStatuses &&
-              projectStatuses.map((status) => (
-                <option key={status.name} value={status.name}>
-                  {status.name}
-                </option>
-              ))}
-          </select>
-        </div>
-        <div className=" sm:w-32">
-          <select
-            id="endDateStatus"
-            {...register("endDateStatus", {
-              required: "End Date Status is required",
-            })}
-            className="w-full p-1.5  focus:outline-none "
-          >
-            <option value="">Lookup Date</option>
-            {dateField &&
-              dateField.length > 0 &&
-              dateField.map((field) => (
-                <option key={field.id} value={`${field.id}:${field.name}`}>
-                  {field.name}
-                </option>
-              ))}
-          </select>
-        </div>
 
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-3 py-1 text-[13px] rounded-sm hover:bg-blue-700 disabled:bg-blue-500"
-          disabled={!isFormFilled}
+    <form
+      onSubmit={handleSubmit(handleSubmitForm)}
+      className="flex flex-wrap items-center gap-2 w-full text-sm font-medium text-gray-800"
+    >
+      <AssigneeFilterDropdown
+        options={assignees}
+        onChange={handleAssigneeChange}
+        project={project}
+      />
+      <div className="w-[115px]">
+        <input
+          id="startDate"
+          {...register("startDate", {
+            required: "Start Date is required",
+          })}
+          type="date"
+          className=" w-full p-1.5 border rounded-lg focus:outline-none border-gray-300"
+        />
+      </div>
+      <div className="flex items-center justify-center p-0.5">
+        <span className="font-medium text-sm">TO</span>
+      </div>
+      <div className="w-[120px]">
+        <input
+          id="endDate"
+          {...register("endDate", { required: "End Date is required" })}
+          type="date"
+          className="w-full p-1.5 border rounded-lg focus:outline-none border-gray-300"
+        />
+      </div>
+      <div className="w-[120px]">
+        <select
+          id="status"
+          {...register("status", { required: "Status is required" })}
+          className="w-full p-1 focus:outline-none border-gray-300"
         >
-          Generate
-        </button>
-        {isFormFilled && (
-          <div>
-            <button
-              type="button"
-              className="text-gray-700 text-sm font-medium"
-              onClick={handleReset}
-            >
-              Reset
-            </button>
-          </div>
-        )}
-        <div className="relative group w-5">
-          <IoInformationCircleOutline size={20} className="cursor-pointer" />
-          <Tooltip
-            text={`"Lookup Status" represents the status you want to verify, while "Lookup Date" is the field you want to compare it against. For example, if you select "Dev Completed" as the Lookup Status and "Dev End Date" as the Lookup Date, the report will show all tasks that transitioned to "Dev Completed" (within the selected date range) after the specified "Dev End Date."`}
-          />
+          <option value="">Lookup Status</option>
+          {projectStatuses &&
+            projectStatuses.map((status) => (
+              <option key={status.name} value={status.name}>
+                {status.name}
+              </option>
+            ))}
+        </select>
+      </div>
+      <div className="w-[115px]">
+        <select
+          id="endDateStatus"
+          {...register("endDateStatus", {
+            required: "End Date Status is required",
+          })}
+          className="w-full p-1  focus:outline-none "
+        >
+          <option value="">Lookup Date</option>
+          {dateField &&
+            dateField.length > 0 &&
+            dateField.map((field) => (
+              <option key={field.id} value={`${field.id}:${field.name}`}>
+                {field.name}
+              </option>
+            ))}
+        </select>
+      </div>
+
+      <button
+        type="submit"
+        className="bg-blue-600 text-white px-3 py-1 text-[13px] rounded-sm hover:bg-blue-700 disabled:bg-blue-500"
+        disabled={!isFormFilled}
+      >
+        Generate
+      </button>
+      {isFormFilled && (
+        <div>
+          <button
+            type="button"
+            className="text-gray-700 text-sm font-medium"
+            onClick={handleReset}
+          >
+            Reset
+          </button>
         </div>
-      </form>
-    </>
+      )}
+      <div className="relative group w-5">
+        <IoInformationCircleOutline size={20} className="cursor-pointer" />
+        <Tooltip
+          text={`"Lookup Status" represents the status you want to verify, while "Lookup Date" is the field you want to compare it against. For example, if you select "Dev Completed" as the Lookup Status and "Dev End Date" as the Lookup Date, the report will show all tasks that transitioned to "Dev Completed" (within the selected date range) after the specified "Dev End Date."`}
+        />
+      </div>
+    </form>
+
   );
 };
 

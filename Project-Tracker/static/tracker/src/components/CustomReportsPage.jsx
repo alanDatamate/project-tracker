@@ -96,7 +96,7 @@ const CustomReportsPage = () => {
           </button>
         </div>
       </aside>
-      <main className="flex-1 px-5 w-full">
+      <main className="flex-1 px-2.5 w-full">
         <div className="bg-white rounded-lg p-2 pt-5">
           {renderActiveTab()}
         </div>
