@@ -1,43 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Calendar, momentLocalizer } from "react-big-calendar";
-import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import CustomDropdown from "../../Filters/CustomDropdown";
 import { useSelector } from "react-redux";
 import { invoke } from "@forge/bridge";
 import AssigneeFilterDropdown from "../../Filters/AssigneeFilter";
+import CalendarComponent from "./CalendarComponent";
 
-
-const localizer = momentLocalizer(moment);
 
 const ResourceWiseCalendar = () => {
   const { projects } = useSelector((state) => state.filters);
   const handleProjectChange = (value) => {
     setProject(value)
   };
-  const dummyTasks = [
-    {
-      id: 1,
-      title: "Dev Task 1",
-      assignee: "John Doe",
-      devStart: new Date("2025-02-01"), // 1 Feb 2025
-      devEnd: new Date("2025-02-07"),   // 7 Feb 2025
-    },
-    {
-      id: 2,
-      title: "QA Task 1",
-      assignee: "John Doe",
-      qaStart: new Date("2025-02-10"), // 10 Feb 2025
-      qaEnd: new Date("2025-02-12"),   // 12 Feb 2025
-    },
-    {
-      id: 3,
-      title: "Dev Task 2",
-      assignee: "Jane Smith",
-      devStart: new Date("2025-02-15"), // 15 Feb 2025
-      devEnd: new Date("2025-02-20"),   // 20 Feb 2025
-    },
-  ];
 
   const [assignee, setAssignee] = useState("");
   const [dateField, setDateField] = useState("dev"); // Default to dev date
@@ -59,7 +33,7 @@ const ResourceWiseCalendar = () => {
     const end = new Date(endDate);
 
     // Filter tasks based on assignee and selected date field
-    const filteredTasks = dummyTasks.filter((task) => {
+    const filteredTasks = [].filter((task) => {
       return (
         task.assignee === assignee &&
         task[`${dateField}Start`] <= end &&
@@ -103,8 +77,8 @@ const ResourceWiseCalendar = () => {
   };
 
   return (
-    <div className="p-4 bg-gray-100">
-      <div className="mb-[20px] flex gap-2">
+    <>
+      <div className="mb-2 flex gap-2">
         <CustomDropdown
           option={"Project"}
           options={projects}
@@ -116,11 +90,7 @@ const ResourceWiseCalendar = () => {
           onChange={handleAssigneeChange}
           project={project}
         />
-        <AssigneeFilterDropdown
-          options={assignees}
-          onChange={handleAssigneeChange}
-          project={project}
-        />
+        
         <input
           type="date"
           value={startDate}
@@ -138,15 +108,8 @@ const ResourceWiseCalendar = () => {
           Generate
         </button>
       </div>
-      <Calendar
-        localizer={localizer}
-        events={[]}
-        startAccessor="start"
-        endAccessor="end"
-        style={{ height: "500px" }}
-        dayPropGetter={dayPropGetter}
-      />
-    </div>
+      <CalendarComponent events={[]}/>
+    </>
   );
 };
 
