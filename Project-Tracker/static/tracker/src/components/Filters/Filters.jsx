@@ -6,7 +6,7 @@ const Filters = ({ project }) => {
   const { filters, handleProjectChange } = useFilters();
 
   return (
-    <section className="flex flex-nowrap items-center mb-6 w-full">
+    <section className="flex gap-2 items-center mb-6 w-full">
       <CustomDropdown
         option={"Select a Project"}
         options={filters.projects}

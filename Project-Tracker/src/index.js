@@ -7,12 +7,13 @@ const resolver = new Resolver();
 /** Fetch all projects */
 resolver.define('getProjects', async () => {
   try {
-    const projects = await getProjects()
+    const projects = await getProjects();
     return { projects };
   } catch (error) {
     return { error: error.message || "Failed to fetch projects" };
   }
 });
+
 /** Fetch all users assigned for project */
 resolver.define("getAssigneesForProject", async (req) => {
   const { key } = req.payload;

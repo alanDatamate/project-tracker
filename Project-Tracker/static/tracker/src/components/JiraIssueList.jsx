@@ -4,10 +4,8 @@ import {
   fetchConflictingIssues,
   setSelectedStatusName,
 } from "../redux/reducers/issuesSlice";
-import { invoke } from "@forge/bridge";
 import {
   setIssuesFetched,
-  setProjects,
   setSeletedAssignees,
 } from "../redux/reducers/filterSlice";
 import IssueTable from "./IssueTable";
@@ -15,7 +13,6 @@ import Filters from "./Filters/Filters";
 import LoadingSpinner from "./LoadingSpinner";
 import Pagination from "./shared/Pagination";
 import NoTasksFound from "./shared/NoTasksFound";
-import { FiAlertCircle, FiAlertCircley } from "react-icons/fi";
 
 const JiraIssueList = () => {
   const dispatch = useDispatch();
@@ -34,18 +31,6 @@ const JiraIssueList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const issuesPerPage = 50;
-
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const response = await invoke("getProjects");
-        dispatch(setProjects(response.projects));
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      }
-    };
-    fetchProjects();
-  }, [dispatch]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -100,7 +85,7 @@ const JiraIssueList = () => {
   }, [total]);
 
   return (
-    <main>
+    <section>
       <Filters project={project} />
       {loading ? (
         <LoadingSpinner/>
@@ -126,7 +111,7 @@ const JiraIssueList = () => {
           )}
         </>
       )}
-    </main>
+    </section>
   );
 };
 

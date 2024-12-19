@@ -73,46 +73,24 @@ const CustomDropdown = ({ option, options, onChange, disableDispatch }) => {
       setSelectedProject("");
     }
   }, [project]);
+  const displayText = selectedProject.length > 14
+    ? selectedProject.slice(0, 14)
+    : selectedProject;
 
   return (
     <div
       ref={dropdownRef}
-      className={`relative ${selectedProject ? " w-72" : ""}`}
+      className="relative text-sm font-semibold "
     >
       <button
         onClick={toggleDropdown}
-        className={`w-full py-1 text-left bg-white rounded-lg ${
-          selectedProject ? "" : "hover:bg-gray-300"
-        } focus:outline-none flex items-center 
-          ${isOpen ? "border-b-2 border-blue-500" : ""}`}
+        className={`px-1 py-1 text-left  rounded-sm  focus:outline-none flex items-center w-full
+          ${selectedProject ? "bg-blue-100 0" : "hover:bg-gray-300 bg-gray-200"} whitespace-nowrap text-ellipsis`}
+        type="button"
       >
-        <span
-          className={`flex items-center rounded-lg p-1 ${
-            selectedProject ? "bg-blue-100 hover:bg-white " : ""
-          }`}
-        >
-          {selectedProject ? (
-            <>
-              <span className={"text-blue-600 text-sm font-bold "}>
-                Project :
-                <span className="text-blue-500 text-sm font-[600]">
-                  {" "}
-                  &nbsp;
-                  {selectedProject.length > 14
-                    ? selectedProject.slice(0, 14)
-                    : selectedProject}
-                </span>
-              </span>
-            </>
-          ) : (
-            <span className="text-gray-900 text-base font-semibold">
-              {option}
-            </span>
-          )}
-          <RiArrowDropDownLine size={25} />
-        </span>
+        <span className={`${selectedProject ? "text-blue-600 text-[13px]" : ""} `}>{selectedProject ? displayText : option}</span>
+        <RiArrowDropDownLine size={20} />
       </button>
-
       {isOpen && (
         <div className="absolute z-20 mt-1 left-0 w-[20rem] bg-white border border-gray-300 rounded-lg shadow-lg">
           <div className="p-2">
@@ -127,7 +105,7 @@ const CustomDropdown = ({ option, options, onChange, disableDispatch }) => {
           <ul className="max-h-72 overflow-y-auto">
             {loading ? (
               <>
-                <LoadingSpinner/>
+                <LoadingSpinner />
               </>
             ) : filteredOptions && filteredOptions.length > 0 ? (
               filteredOptions.map((option, index) => (
