@@ -44,7 +44,7 @@ const CalendarComponent = ({ events }) => {
   const groupedEvents = (events) => {
     const grouped = {};
 
-    events.forEach(event => {
+    events && events.length > 0 && events.forEach(event => {
       const eventDate = moment(event.start).format('YYYY-MM-DD');
       if (!grouped[eventDate]) {
         grouped[eventDate] = [];
@@ -54,23 +54,18 @@ const CalendarComponent = ({ events }) => {
 
     return grouped;
   };
-
   const eventsGroupedByDate = groupedEvents(events);
-
-  // Custom event rendering to handle multiple events on the same day
   const renderEventContent = ({ event }) => {
-    const eventDate = moment(event.start).format('YYYY-MM-DD');
-    const eventsForDay = eventsGroupedByDate[eventDate];
-
-    // Render events for a specific day
-    if (eventsForDay) {
-      return eventsForDay.map((ev, index) => (
-        <div key={index} style={{ padding: '1px', fontWeight: 'bold', fontSize: '12px' }}>
+      const eventDate = moment(event.start).format('YYYY-MM-DD');
+      const eventsForDay = eventsGroupedByDate[eventDate];
+      if (eventsForDay) {
+        return eventsForDay.map((ev, index) => (
+          <div key={index} style={{ padding: '1px', fontWeight: 'bold', fontSize: '12px' }}>
           {ev.title}
         </div>
       ));
     }
-
+    
     return null;
   };
 

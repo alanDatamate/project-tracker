@@ -277,13 +277,18 @@ resolver.define('getAssigneesTaskScheduledList', async (req) => {
   const { project, startDate, endDate, assignee, selectedField } = req.payload;
   try {
     const response = await getAssigneesScheduledIssuesList(project, startDate.split("T")[0], endDate.split("T")[0], assignee[0], selectedField);
-    const filteredIssues = response.issues.map((issue) => {
-      return {
-        start: new Date("2024-12-10"),
-        end: new Date("2024-12-30"),
-        title: issue.key,
-      };
-    });
+    const filteredIssues = response.issues
+    .map((issue) => {
+      const fieldValue = issue.fields[`${selectedField.id}`];
+      if (fieldValue && !isNaN(new Date(fieldValue))) {
+        return {
+          start: new Date(fieldValue),
+          end: new Date(fieldValue),
+          title: issue.key,
+        };
+      }
+    })
+    .filter(Boolean);
     console.log(filteredIssues)
     return {filteredIssues}
   } catch (error) {
