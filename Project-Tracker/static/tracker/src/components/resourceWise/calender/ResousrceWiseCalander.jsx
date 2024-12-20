@@ -3,8 +3,8 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import CustomDropdown from "../../Filters/CustomDropdown";
 import { useSelector } from "react-redux";
 import { invoke } from "@forge/bridge";
-import AssigneeFilterDropdown from "../../Filters/AssigneeFilter";
 import CalendarComponent from "./CalendarComponent";
+import AssigneList from "../../Filters/AssigneList";
 
 
 const ResourceWiseCalendar = () => {
@@ -14,48 +14,40 @@ const ResourceWiseCalendar = () => {
   };
 
   const [assignee, setAssignee] = useState("");
-  const [dateField, setDateField] = useState("dev"); // Default to dev date
+  const [dateField, setDateField] = useState([]); 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [busyRanges, setBusyRanges] = useState([]);
   const [assignees, setAssignees] = useState([]);
   const [project, setProject] = useState("");
+  const [selectedField, setSelectedField] = useState(null);
 
-
-  // Function to filter tasks and set busy ranges
-  const handleGenerate = () => {
-    if (!assignee || !startDate || !endDate) {
-      alert("Please fill all filters: Assignee, Start Date, and End Date.");
+  const handleGenerate = async() => {
+    if (!assignee || !startDate || !endDate || !project || !selectedField) {
+      alert("Please fill fields.");
       return;
     }
 
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    // Filter tasks based on assignee and selected date field
-    const filteredTasks = [].filter((task) => {
-      return (
-        task.assignee === assignee &&
-        task[`${dateField}Start`] <= end &&
-        task[`${dateField}End`] >= start
-      );
-    });
-
-    setBusyRanges(filteredTasks);
-  };
-
-  // Function to style day columns dynamically
-  const dayPropGetter = (date) => {
-    const isBusy = busyRanges.some(
-      (range) => date >= range[`${dateField}Start`] && date <= range[`${dateField}End`]
-    );
-
-    if (isBusy) {
-      return { style: { backgroundColor: "red", color: "white" } }; // Busy days
-    } else {
-      return { style: { backgroundColor: "lightblue" } }; // Free days
+    try {
+      const { filteredIssues } = await invoke("getAssigneesTaskScheduledList", {
+        project,
+        startDate: start,
+        endDate: end,
+        assignee,
+        selectedField
+      });
+      setBusyRanges(filteredIssues);
+      console.log(busyRanges)
+      console.log(filteredIssues)
+    } catch (error) {
+      console.log(error)
     }
   };
+
+
   useEffect(() => {
     if (project) {
       const getAssigneesForProject = async () => {
@@ -69,11 +61,31 @@ const ResourceWiseCalendar = () => {
         }
       };
       getAssigneesForProject();
+      getDateFieldForProject();
     }
   }, [project]);
 
-  const handleAssigneeChange = (assignee) => {
+  const getDateFieldForProject = async () => {
+    try {
+      const { formattedFields } = await invoke(
+        "getDateFieldForProject",
+        {
+          key: project,
+        }
+      );
+      setDateField(formattedFields);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const handleChange = (e) => {
+    const [id, name] = e.target.value.split(':'); 
+    setSelectedField({id, name}); 
+  };
+  
 
+  const handleAssigneeChange = (assignee) => {
+    setAssignee(assignee)
   };
 
   return (
@@ -85,11 +97,26 @@ const ResourceWiseCalendar = () => {
           onChange={handleProjectChange}
           disableDispatch={true}
         />
-        <AssigneeFilterDropdown
+        <AssigneList
           options={assignees}
           onChange={handleAssigneeChange}
           project={project}
         />
+        <div className="w-[115px]">
+        <select
+            className="w-full p-1  focus:outline-none "
+            onChange={handleChange}
+        >
+          <option value="">Lookup Date</option>
+          {dateField &&
+            dateField.length > 0 &&
+            dateField.map((field) => (
+              <option key={field.id} value={`${field.id}:${field.name}`}>
+                {field.name}
+              </option>
+            ))}
+        </select>
+      </div>
         
         <input
           type="date"
@@ -108,7 +135,7 @@ const ResourceWiseCalendar = () => {
           Generate
         </button>
       </div>
-      <CalendarComponent events={[]}/>
+      <CalendarComponent events={busyRanges}/>
     </>
   );
 };

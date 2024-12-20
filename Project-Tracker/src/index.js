@@ -1,6 +1,6 @@
 import Resolver from '@forge/resolver';
 import api, { route } from '@forge/api';
-import { getAssigneesForProject, getDateFieldsForProject, getIssuesForStatuses, getProjects, getResourceWiseFilteredIssues, getStatusesForProject, retrieveProjectDateFields } from './api/JIraApi';
+import { getAssigneesForProject, getAssigneesScheduledIssuesList, getDateFieldsForProject, getIssuesForStatuses, getProjects, getResourceWiseFilteredIssues, getStatusesForProject, retrieveProjectDateFields } from './api/JIraApi';
 
 const resolver = new Resolver();
 
@@ -272,6 +272,25 @@ resolver.define('applyResourcewiseFilters', async (req) => {
 });
 /** <----------------------------------------------------------------------------------------------> */
 
+/** Fetch all projects */
+resolver.define('getAssigneesTaskScheduledList', async (req) => {
+  const { project, startDate, endDate, assignee, selectedField } = req.payload;
+  try {
+    const response = await getAssigneesScheduledIssuesList(project, startDate.split("T")[0], endDate.split("T")[0], assignee[0], selectedField);
+    const filteredIssues = response.issues.map((issue) => {
+      return {
+        start: new Date("2024-12-10"),
+        end: new Date("2024-12-30"),
+        title: issue.key,
+      };
+    });
+    console.log(filteredIssues)
+    return {filteredIssues}
+  } catch (error) {
+    console.log(error)
+    return { error: error.message || "Failed to fetch getAssigneesTaskScheduledList" };
+  }
+});
 
 
 
