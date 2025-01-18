@@ -8,6 +8,7 @@ import { setIssues } from "../redux/reducers/issuesSlice";
 import TimeSheet from "./timeSheet/TimeSheet";
 import { invoke } from "@forge/bridge";
 import ResourceWiseCalender from "./resourceWise/calender/ResousrceWiseCalander";
+import FetchPendingTasksForDevelopers from "./taskwiseReport/fetchPendingTasksForDevelopers";
 
 const CustomReportsPage = () => {
   const dispatch = useDispatch();
@@ -37,6 +38,8 @@ const CustomReportsPage = () => {
         return <ResourceWiseIssueList />;
       case "resource-wise-calender":
         return <ResourceWiseCalender />;
+      case "task-wise-pending-jobs":
+        return <FetchPendingTasksForDevelopers />;
       default:
         return (
           <div className="p-4 text-center">
@@ -93,6 +96,15 @@ const CustomReportsPage = () => {
               }`}
           >
             Resource-wise-calender
+          </button>
+          <button
+            onClick={() => setActiveTab("task-wise-pending-jobs")}
+            className={`w-full text-left px-2 py-1 rounded-lg font-medium ${activeTab === "task-wise-pending-jobs"
+                ? "text-blue-600"
+                : ""
+              }`}
+          >
+            Task-wise-pending-jobs
           </button>
         </div>
       </aside>

@@ -292,10 +292,24 @@ resolver.define('getAssigneesTaskScheduledList', async (req) => {
     console.log(filteredIssues)
     return {filteredIssues}
   } catch (error) {
-    console.log(error)
     return { error: error.message || "Failed to fetch getAssigneesTaskScheduledList" };
   }
 });
+
+resolver.define('FetchPendingTasksForDevelopers', async (req) => {
+  try {
+    const response = await api.asUser().requestJira(route`/rest/api/3/search?jql=assignee in ("Muhammed Nehyan M") AND status not in ("Done")`);
+    const data = await response.json();
+    data.issues.map((task) => (
+    console.log(task.fields)
+    ))
+    return data.issues; 
+  } catch (error) {
+    console.log(error)
+    return { error: error.message || "Failed to fetch FetchPendingTasksForDevelopers" };
+  }
+});
+ 
 
 
 
