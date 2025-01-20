@@ -58,8 +58,9 @@ const FetchPendingTasksForDevelopers = () => {
                             <tr key={task.id} className="border-b hover:bg-gray-50">
                                 <td className="py-3 px-4">{task.key}</td>
                                 <td className="py-3 px-4">{task.fields.summary.length > 15 ? task.fields.summary.slice(0, 40) + "..." : task.fields.summary}</td>
-                                <td className="py-3 px-4">{task.fields.startDate || 'N/A'}</td>
-                                <td className="py-3 px-4">{task.fields.dueDate || 'N/A'}</td>
+                                <td className="py-3 px-4">{task.fields.startDate || '--'}</td>
+                                {/* <td className="py-3 px-4">{task.fields.dueDate || 'N/A'}</td> */}
+                                <td className="py-3 px-4">{task.fields.duedate || '--'}</td>
                                 <td className="py-3 px-4">
                                     <span
                                         className={`py-1 px-3 rounded-full text-xs ${task.fields.status.name === 'In Progress'

@@ -299,10 +299,7 @@ resolver.define('getAssigneesTaskScheduledList', async (req) => {
 resolver.define('FetchPendingTasksForDevelopers', async (req) => {
   try {
     const response = await api.asUser().requestJira(route`/rest/api/3/search?jql=assignee in ("Muhammed Nehyan M") AND status not in ("Done")`);
-    const data = await response.json();
-    data.issues.map((task) => (
-    console.log(task.fields)
-    ))
+    const data = await response.json(); 
     return data.issues; 
   } catch (error) {
     console.log(error)
