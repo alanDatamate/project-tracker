@@ -97,8 +97,13 @@ const getIssuesForStatuses = async (
   return response.json();
 };
 
+const getAssigneesScheduledIssuesList = async (project, startDate, endDate, assignee, selectedField) => {
+  const jql = `${assignee ? `assignee="${assignee.displayName}" AND` : ''} "${selectedField.name}" >= "${startDate}" AND "${selectedField.name}" <= "${endDate}"`;
+  const response = await api.asUser().requestJira(route`/rest/api/3/search?jql=${jql}`);
+  return response.json();
+};
 
-
+ 
 
 export {
   getProjects,
@@ -108,4 +113,5 @@ export {
   getIssuesForStatuses,
   retrieveProjectDateFields,
   getResourceWiseFilteredIssues,
+  getAssigneesScheduledIssuesList
 };

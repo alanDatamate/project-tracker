@@ -1,6 +1,6 @@
 import Resolver from '@forge/resolver';
 import api, { route } from '@forge/api';
-import { getAssigneesForProject, getDateFieldsForProject, getIssuesForStatuses, getProjects, getResourceWiseFilteredIssues, getStatusesForProject, retrieveProjectDateFields } from './api/JIraApi';
+import { getAssigneesForProject, getAssigneesScheduledIssuesList, getDateFieldsForProject, getIssuesForStatuses, getProjects, getResourceWiseFilteredIssues, getStatusesForProject, retrieveProjectDateFields } from './api/JIraApi';
 
 const resolver = new Resolver();
 
@@ -17,6 +17,7 @@ resolver.define('getProjects', async () => {
 /** Fetch all users assigned for project */
 resolver.define("getAssigneesForProject", async (req) => {
   const { key } = req.payload;
+
   try {
     const assignees = await getAssigneesForProject(key)
     if (!assignees?.values) {
@@ -213,7 +214,7 @@ resolver.define('applyClientWiseFilters', async (req) => {
         projects[projectKey].projectName = projectData.name;
         projects[projectKey].projectAvatarUrl = projectData.avatarUrls?.["24x24"] || '';
       }
-    }
+    } 
     return projects;
   } catch (error) {
     console.log(error)
@@ -272,6 +273,42 @@ resolver.define('applyResourcewiseFilters', async (req) => {
 });
 /** <----------------------------------------------------------------------------------------------> */
 
+/** Fetch all projects */
+resolver.define('getAssigneesTaskScheduledList', async (req) => {
+  const { project, startDate, endDate, assignee, selectedField } = req.payload;
+  try {
+    const response = await getAssigneesScheduledIssuesList(project, startDate.split("T")[0], endDate.split("T")[0], assignee[0], selectedField);
+    const filteredIssues = response.issues
+    .map((issue) => {
+      const fieldValue = issue.fields[`${selectedField.id}`];
+      if (fieldValue && !isNaN(new Date(fieldValue))) {
+        return {
+          start: new Date(fieldValue),
+          end: new Date(fieldValue),
+          title: issue.key,
+        };
+      }
+    })
+    .filter(Boolean);
+    console.log(filteredIssues)
+    return {filteredIssues}
+  } catch (error) {
+    return { error: error.message || "Failed to fetch getAssigneesTaskScheduledList" };
+  }
+});
+
+resolver.define('FetchPendingTasksForDevelopers', async (req) => {
+  const { selectedAssignee } = req.payload;
+  try {
+    const response = await api.asUser().requestJira(route`/rest/api/3/search?jql=assignee in ("${selectedAssignee}") AND status not in ("Done")`);
+    const data = await response.json(); 
+    return data.issues; 
+  } catch (error) {
+    console.log(error)
+    return { error: error.message || "Failed to fetch FetchPendingTasksForDevelopers" };
+  }
+});
+ 
 
 
 

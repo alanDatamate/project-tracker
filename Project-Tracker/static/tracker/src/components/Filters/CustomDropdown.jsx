@@ -6,7 +6,7 @@ import {
   setProjectStatuses,
   setStatus,
 } from "../../redux/reducers/filterSlice";
-import LoadingSpinner from "../LoadingSpinner";
+import Loading from "../Loading";
 
 const CustomDropdown = ({ option, options, onChange, disableDispatch }) => {
   const { project } = useSelector((state) => state.filters);
@@ -105,7 +105,7 @@ const CustomDropdown = ({ option, options, onChange, disableDispatch }) => {
           <ul className="max-h-72 overflow-y-auto">
             {loading ? (
               <>
-                <LoadingSpinner />
+                <Loading />
               </>
             ) : filteredOptions && filteredOptions.length > 0 ? (
               filteredOptions.map((option, index) => (

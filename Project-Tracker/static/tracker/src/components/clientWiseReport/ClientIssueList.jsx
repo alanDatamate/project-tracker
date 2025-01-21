@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { invoke } from "@forge/bridge";
-import LoadingSpinner from "../LoadingSpinner";
+import Loading from "../Loading";
 import ClientIssueTable from "./ClientIssueTable";
 import { useSelector } from "react-redux";
 import ProjectFilterWithCheckBox from "../Filters/ProjectFilterWithCheckBox";
@@ -71,7 +71,7 @@ const ClientWiseIssueList = () => {
   };
 
   if (!projects) {
-    return <LoadingSpinner />;
+    return <Loading />;
   }
 
   useEffect(() => {
@@ -175,7 +175,7 @@ const ClientWiseIssueList = () => {
       </section>
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
-      {loading ? <LoadingSpinner /> : <ClientIssueTable issues={issues} status={status}/>}
+      {loading ? <Loading /> : <ClientIssueTable issues={issues} status={status}/>}
 
       {!loading && !data && issues && Object.entries(issues).length > 0 && (
         <section className="pagination mt-4 flex justify-between items-center">

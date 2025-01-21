@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { RiArrowDropDownLine } from "react-icons/ri";
-import LoadingSpinner from "../LoadingSpinner";
+import Loading from "../Loading";
 
 const ProjectFilterWithCheckBox = ({
   selectedProjects,
@@ -93,7 +93,7 @@ const ProjectFilterWithCheckBox = ({
             />
           </div>
           {loading || isSearching ? (
-            <LoadingSpinner />
+            <Loading />
           ) : (
             <ul className="max-h-72 overflow-y-auto">
               {filteredProjects.length > 0 ? (

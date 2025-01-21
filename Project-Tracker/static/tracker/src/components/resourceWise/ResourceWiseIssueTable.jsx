@@ -1,6 +1,5 @@
 import React from "react";
 import NoTasksFound from "../shared/NoTasksFound";
-import { FiAlertCircle } from "react-icons/fi";
 
 const ResourceWiseTaskList = ({ issues, project }) => {
   if (!issues) {
