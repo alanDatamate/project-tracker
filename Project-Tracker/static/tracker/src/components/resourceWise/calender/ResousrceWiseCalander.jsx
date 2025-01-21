@@ -4,7 +4,7 @@ import CustomDropdown from "../../Filters/CustomDropdown";
 import { useSelector } from "react-redux";
 import { invoke } from "@forge/bridge";
 import CalendarComponent from "./CalendarComponent";
-import AssigneList from "../../Filters/AssigneList";
+import AssigneeList from "../../Filters/AssigneeList";
 
 
 const ResourceWiseCalendar = () => {
@@ -97,7 +97,7 @@ const ResourceWiseCalendar = () => {
           onChange={handleProjectChange}
           disableDispatch={true}
         />
-        <AssigneList
+        <AssigneeList
           options={assignees}
           onChange={handleAssigneeChange}
           project={project}

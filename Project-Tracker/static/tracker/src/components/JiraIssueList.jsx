@@ -10,7 +10,7 @@ import {
 } from "../redux/reducers/filterSlice";
 import IssueTable from "./IssueTable";
 import Filters from "./Filters/Filters";
-import LoadingSpinner from "./LoadingSpinner";
+import Loading from "./Loading";
 import Pagination from "./shared/Pagination";
 import NoTasksFound from "./shared/NoTasksFound";
 
@@ -88,7 +88,7 @@ const JiraIssueList = () => {
     <section>
       <Filters project={project} />
       {loading ? (
-        <LoadingSpinner/>
+        <Loading/>
       ) : (
         <>
           {filteredIssues && filteredIssues.length > 0 ? (

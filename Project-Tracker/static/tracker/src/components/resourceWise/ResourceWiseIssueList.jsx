@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { invoke } from "@forge/bridge";
 import ResourceWiseIssueTable from "./ResourceWiseIssueTable";
-import LoadingSpinner from "../LoadingSpinner";
+import Loading from "../Loading";
 import CustomDropdown from "../Filters/CustomDropdown";
 import StatusFilterDropdown from "../Filters/StatusFilter";
 
@@ -126,7 +126,7 @@ const ResourceWiseIssueList = () => {
       {loading ? (
         <>
           {error && <p>{error}</p>}
-          <LoadingSpinner />
+          <Loading />
         </>
       ) : (
         <ResourceWiseIssueTable issues={issues} project={project} />

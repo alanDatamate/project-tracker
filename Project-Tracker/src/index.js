@@ -17,6 +17,7 @@ resolver.define('getProjects', async () => {
 /** Fetch all users assigned for project */
 resolver.define("getAssigneesForProject", async (req) => {
   const { key } = req.payload;
+
   try {
     const assignees = await getAssigneesForProject(key)
     if (!assignees?.values) {
@@ -213,7 +214,7 @@ resolver.define('applyClientWiseFilters', async (req) => {
         projects[projectKey].projectName = projectData.name;
         projects[projectKey].projectAvatarUrl = projectData.avatarUrls?.["24x24"] || '';
       }
-    }
+    } 
     return projects;
   } catch (error) {
     console.log(error)
@@ -297,8 +298,9 @@ resolver.define('getAssigneesTaskScheduledList', async (req) => {
 });
 
 resolver.define('FetchPendingTasksForDevelopers', async (req) => {
+  const { selectedAssignee } = req.payload;
   try {
-    const response = await api.asUser().requestJira(route`/rest/api/3/search?jql=assignee in ("Muhammed Nehyan M") AND status not in ("Done")`);
+    const response = await api.asUser().requestJira(route`/rest/api/3/search?jql=assignee in ("${selectedAssignee}") AND status not in ("Done")`);
     const data = await response.json(); 
     return data.issues; 
   } catch (error) {
