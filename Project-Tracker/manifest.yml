@@ -18,10 +18,13 @@ app:
 permissions:
   scopes:
     - read:jira-work
-    - write:jira-work
     - read:jira-user
     - read:avatar:jira
-    - 'manage:jira-configuration'
+    - manage:jira-configuration
+    - read:sprint:jira-software
+    - read:board-scope:jira-software
+    - read:project:jira
+    - write:jira-work
   external:
     images:
       - '*.giphy.com'  

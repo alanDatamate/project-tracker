@@ -41,6 +41,7 @@ resolver.define('getDateFieldForProject', async (req) => {
     const projectData = data.projects[0];
     const fields = [];
     const seenIds = new Set();
+
     projectData.issuetypes.forEach((type) => {
       Object.values(type.fields).forEach((field) => {
         if (field.schema?.type == "date" && !seenIds.has(field.key)) {
@@ -49,12 +50,14 @@ resolver.define('getDateFieldForProject', async (req) => {
         }
       })
     })
+
     const statusFields = await getStatusesForProject(key)
     const taskStatuses = getTaskStatuses(statusFields)
     return {
       formattedFields: fields,
       statuses: taskStatuses,
     };
+
   } catch (error) {
     return { error: error.message || "Failed to fetching date fields , try again" };
   }
@@ -309,6 +312,97 @@ resolver.define('FetchPendingTasksForDevelopers', async (req) => {
   }
 });
  
+// Function to fetch issues for completed tasks
+resolver.define('TaskWiseCompletedJobLists', async (req) => {
+  try {
+    const response = await api.asApp().requestJira(route`/rest/api/3/search?jql= status = Done AND project = "HBM"`);
+    const data = await response.json();
+    return data.issues;
+  } catch (error) {
+    console.log(error)
+    return { error: error.message || "Failed to fetch TaskWiseCompletedJobLists" };
+  }
+});
+
+resolver.define('getSprintsData', async () => {
+    try {
+        const sprintsResponse = await api.asUser().requestJira(route`/rest/agile/1.0/board/7/sprint`);
+        const sprintsData = await sprintsResponse.json();
+        const sprintDetailsPromises = sprintsData.values.map(async (sprint) => {
+            try {
+                const issuesResponse = await api.asUser().requestJira(route`/rest/api/3/search?jql=sprint=${sprint.id}`);
+                const issuesData = await issuesResponse.json();
+                let estimatedTime = 0;
+                let actualTime = 0;
+                issuesData.issues.forEach(issue => {
+                    if (issue.fields.timeoriginalestimate) {
+                        estimatedTime += issue.fields.timeoriginalestimate;
+                    }
+                    if (issue.fields.timespent) {
+                        actualTime += issue.fields.timespent;
+                    }
+                });
+                return {
+                    sprintName: sprint.name,
+                    startDate: sprint.startDate,
+                    endDate: sprint.endDate,
+                    estimatedTime: estimatedTime / 3600, 
+                    actualTime: actualTime / 3600,       
+                    status: sprint.state,                
+                };
+
+            } catch (issueError) {
+                console.error(`Error fetching issues for sprint ${sprint.id}:`, issueError);
+                return null;
+            }
+        });
+        const sprintDetails = await Promise.all(sprintDetailsPromises);
+        return sprintDetails.filter(sprint => sprint !== null);
+    } catch (error) {
+      console.error("Error fetching issues for sprint:", error);
+      return { error: error.message || "Failed to fetch issues for sprint" };
+    }
+});
+
+resolver.define('PendingTaskAgeList', async (req) => {
+  const { key } = req.payload;
+  console.log(key)
+  try {
+    let allTasks = [];
+    let startAt = 0;
+    const maxResults = 100;
+    
+    while (true) {
+      const response = await api.asUser().requestJira(route`/rest/api/3/search?jql=project=${key} AND status In ("To Do") AND assignee IS NOT EMPTY&fields=assignee,created
+        &maxResults=${maxResults}
+        &startAt=${startAt}
+      `);
+      const data = await response.json();
+      const currentDate = new Date();
+      const tasksWithAge = data.issues.map((issue) => {
+        const assignedDate = new Date(issue.fields.created);
+        const ageInDays = Math.floor((currentDate - assignedDate) / (1000 * 60 * 60 * 24));
+        return {
+          issueKey: issue.key,
+          assignee: issue.fields.assignee.displayName,
+          ageInDays,
+        };
+      });
+
+      allTasks = [...allTasks, ...tasksWithAge];
+
+      // If we've fetched all issues, stop the loop
+      if (data.issues.length < maxResults) break;
+
+      startAt += maxResults;
+    }
+    return allTasks;
+
+  } catch (error) {
+    console.error(error);
+    return { error: error.message || "Failed to fetch pending tasks and calculate their age" };
+  }
+});
 
 
 

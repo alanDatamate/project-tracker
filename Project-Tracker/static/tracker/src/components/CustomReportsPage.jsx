@@ -9,6 +9,9 @@ import TimeSheet from "./timeSheet/TimeSheet";
 import { invoke } from "@forge/bridge";
 import ResourceWiseCalender from "./resourceWise/calender/ResousrceWiseCalander";
 import FetchPendingTasksForDevelopers from "./taskwiseReport/fetchPendingTasksForDevelopers";
+import TaskWiseCompletedJobLists from "./completedJobsReport/TaskWiseCompletedJobLists";
+import FetchIssuesForSprint from "./sprintBasedReport/fetchIssuesForSprint";
+import PendingTaskList from "./pendingtask/PendingTaskList";
 
 const CustomReportsPage = () => {
   const dispatch = useDispatch();
@@ -40,6 +43,12 @@ const CustomReportsPage = () => {
         return <ResourceWiseCalender />;
       case "task-wise-pending-jobs":
         return <FetchPendingTasksForDevelopers />;
+      case "task-wise-completed-jobs":
+        return <TaskWiseCompletedJobLists />;
+      case "pending-task-list":
+        return <PendingTaskList />;
+      case "sprint-based-filter":
+        return <FetchIssuesForSprint />;
       default:
         return (
           <div className="p-4 text-center">
@@ -105,6 +114,33 @@ const CustomReportsPage = () => {
               }`}
           >
             Task-wise-pending-jobs
+          </button>
+          <button
+            onClick={() => setActiveTab("task-wise-completed-jobs")}
+            className={`w-full text-left px-2 py-1 rounded-lg font-medium ${activeTab === "task-wise-completed-jobs"
+                ? "text-blue-600"
+                : ""
+              }`}
+          >
+            Task-wise-completed-jobs
+          </button>
+          <button
+            onClick={() => setActiveTab("pending-task-list")}
+            className={`w-full text-left px-2 py-1 rounded-lg font-medium ${activeTab === "pending-task-list"
+                ? "text-blue-600"
+                : ""
+              }`}
+          >
+            pending-task-list
+          </button>
+          <button
+            onClick={() => setActiveTab("sprint-based-filter")}
+            className={`w-full text-left px-2 py-1 rounded-lg font-medium ${activeTab === "sprint-based-filter"
+                ? "text-blue-600"
+                : ""
+              }`}
+          >
+            sprint-based-filter
           </button>
         </div>
       </aside>
