@@ -1,6 +1,6 @@
 import Resolver from '@forge/resolver';
 import api, { route } from '@forge/api';
-import { getAssigneesForProject, getAssigneesScheduledIssuesList, getDateFieldsForProject, getIssuesForStatuses, getProjects, getResourceWiseFilteredIssues, getStatusesForProject, retrieveProjectDateFields } from './api/JIraApi';
+import { getAssigneesForProject, getAssigneesScheduledIssuesList, getBoards, getDateFieldsForProject, getIssuesForStatuses, getProjects, getResourceWiseFilteredIssues, getStatusesForProject, retrieveProjectDateFields } from './api/JIraApi';
 
 const resolver = new Resolver();
 
@@ -11,6 +11,15 @@ resolver.define('getProjects', async () => {
     return { projects };
   } catch (error) {
     return { error: error.message || "Failed to fetch projects" };
+  }
+});
+/** Fetch all projects */
+resolver.define('getBoards', async () => {
+  try {
+    const boards = await getBoards();
+    return boards?.values;
+  } catch (error) {
+    return { error: error.message || "Failed to fetch boards" };
   }
 });
 
@@ -117,6 +126,18 @@ resolver.define("getConflictIssues", async (req) => {
                   displayName: issue.fields.assignee?.displayName || "Unassigned",
                   avatarUrls: issue.fields.assignee?.avatarUrls,
                 },
+                customfield_10059: {
+                  displayName: issue.fields.customfield_10059?.[0]?.displayName || "Unassigned",
+                  avatarUrls: issue.fields.customfield_10059?.[0]?.avatarUrls,
+                },
+                customfield_10063: {
+                  displayName: issue.fields.customfield_10063?.[0]?.displayName || "Unassigned",
+                  avatarUrls: issue.fields.customfield_10063?.[0]?.avatarUrls,
+                },
+                customfield_10060: {
+                  displayName: issue.fields.customfield_10060?.[0]?.displayName || "Unassigned",
+                  avatarUrls: issue.fields.customfield_10060?.[0]?.avatarUrls,
+                },
                 status: { name: issue.fields.status.name },
                 aggregatetimeoriginalestimate: issue.fields.aggregatetimeoriginalestimate || 0,
                 timeSpent: issue.fields.timespent || 0,
@@ -138,6 +159,7 @@ resolver.define("getConflictIssues", async (req) => {
       total: allIssues.length,
     };
   } catch (error) {
+    console.log(error)
     return { error: error.message || "Failed to fetch conflict issues" };
   }
 });
@@ -148,11 +170,18 @@ resolver.define('retrieveProjectDateFields', async (req) => {
   const { key } = req.payload;
   try {
     const startDates = await retrieveProjectDateFields(key, "start date");
+    const endDates = await retrieveProjectDateFields(key, "end date");
     const startDateFields = startDates
     .filter(field => field.schema?.type === "date")
     .map(field => ({ id: field.key, name: field.name }));
+    const endDateFields = endDates
+    .filter(field => field.schema?.type === "date")
+      .map(field => ({ id: field.key, name: field.name }));
+    endDateFields.push({ id: 'duedate', name: 'Due date' })
+
     return {
       startDates: startDateFields,
+      endDates: endDateFields,
     };
   } catch (error) {
     return { error: error.message || "Failed to retrieve Date fields" };
@@ -293,7 +322,6 @@ resolver.define('getAssigneesTaskScheduledList', async (req) => {
       }
     })
     .filter(Boolean);
-    console.log(filteredIssues)
     return {filteredIssues}
   } catch (error) {
     return { error: error.message || "Failed to fetch getAssigneesTaskScheduledList" };
@@ -301,32 +329,97 @@ resolver.define('getAssigneesTaskScheduledList', async (req) => {
 });
 
 resolver.define('FetchPendingTasksForDevelopers', async (req) => {
-  const { selectedAssignee } = req.payload;
+  const { project, user, status, assigneeNames, startAt = 0, maxResults = 50, startDate, endDate,
+    selectedEndDateField , selectedStartDateField
+   } = req.payload;
   try {
-    const response = await api.asUser().requestJira(route`/rest/api/3/search?jql=assignee in ("${selectedAssignee}") AND status not in ("Done")`);
-    const data = await response.json(); 
-    return data.issues; 
+    const validStartAt = (startAt !== null && startAt !== undefined) ? startAt : 0
+    const statusesArray = status
+      ? status.split(",").map((s) => `"${s.trim()}"`).join(", ")
+      : null;
+    const assigneeNamesArray = assigneeNames
+      ? assigneeNames.map((assignee) => `"${assignee.displayName.trim()}"`).join(", ")
+      : null;
+
+    let jqlQuery = `project = "${project}"`;
+    if (startDate && endDate) {
+      jqlQuery += ` And cf[${selectedStartDateField.match(/\d+/)[0]}] >= ${startDate} AND cf[${selectedEndDateField.match(/\d+/)[0]}] <= ${endDate}`
+    }
+    if (statusesArray) {
+      jqlQuery += ` AND STATUS IN (${statusesArray})`;
+    } else {
+      jqlQuery += ` AND STATUS NOT IN ("Done")`;
+    }
+    // if (user) {
+    //   jqlQuery += ` AND "${user.name}" IS NOT EMPTY`;
+    // }
+    if (assigneeNamesArray) {
+      jqlQuery += ` AND "developer[people]" IN (${assigneeNamesArray})`;
+    }
+
+    const response = await api.asUser().requestJira(route`/rest/api/3/search?jql=${jqlQuery}  ORDER BY created DESC&startAt=${validStartAt}&maxResults=${maxResults}`);
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.log(error)
-    return { error: error.message || "Failed to fetch FetchPendingTasksForDevelopers" };
+    console.log(error);
+    return { error: error.message || "Failed to fetch pending tasks for developers" };
   }
 });
+
+
  
 // Function to fetch issues for completed tasks
 resolver.define('TaskWiseCompletedJobLists', async (req) => {
+  const { project, user, selectedEndDateField, selectedStatus, selectedStartDateField, selectedActualEndStatus, startAt = 0, maxResults = 50,
+    startDate , endDate
+  } = req.payload;
+  console.log(selectedEndDateField,selectedStartDateField)
+  const selectedStatuses = [selectedStatus, selectedActualEndStatus];
+  const validStartAt = (startAt !== null && startAt !== undefined) ? startAt : 0
+  let jqlQuery = `project = "${project}" `;
+  if (startDate && endDate) { 
+    jqlQuery += ` AND cf[${selectedStartDateField.match(/\d+/)[0]}] >= "${startDate}" AND  cf[${selectedEndDateField.match(/\d+/)[0]}] <= "${endDate}"`
+  }
+  // if (user) {
+  //     jqlQuery += ` AND "${user.name}" IS NOT EMPTY`;
+  // }
+
   try {
-    const response = await api.asApp().requestJira(route`/rest/api/3/search?jql= status = Done AND project = "HBM"`);
+    console.log(startDate , endDate)
+    const response = await api.asApp().requestJira(route`/rest/api/3/search?jql=${jqlQuery} ORDER BY created DESC&startAt=${validStartAt}&maxResults=${maxResults}&expand=changelog `);
     const data = await response.json();
-    return data.issues;
+
+    const issuesWithStatusChangeDate =  data.issues.map(issue => {
+      let statusChangeDates = {};
+      issue.changelog.histories.forEach(history => {
+        history.items.forEach(item => {
+          if (item.field === 'status' && selectedStatuses.includes(item.toString)) {
+          const formattedDate = new Date(history.created).toISOString().split("T")[0]
+            if (!statusChangeDates[item.toString]) {
+              statusChangeDates[item.toString] = formattedDate;
+            }
+          }
+        });
+      });
+      return {
+        ...issue,
+        ...statusChangeDates
+      };
+    });
+    return {
+      issues: issuesWithStatusChangeDate,
+      total : data.total
+    };
   } catch (error) {
     console.log(error)
     return { error: error.message || "Failed to fetch TaskWiseCompletedJobLists" };
   }
-});
+}); 
 
-resolver.define('getSprintsData', async () => {
+resolver.define('getSprintsData', async (req) => {
+  const { boardId } = req.payload;
     try {
-        const sprintsResponse = await api.asUser().requestJira(route`/rest/agile/1.0/board/7/sprint`);
+        const sprintsResponse = await api.asUser().requestJira(route`/rest/agile/1.0/board/${boardId}/sprint`);
         const sprintsData = await sprintsResponse.json();
         const sprintDetailsPromises = sprintsData.values.map(async (sprint) => {
             try {
@@ -365,22 +458,22 @@ resolver.define('getSprintsData', async () => {
 });
 
 resolver.define('PendingTaskAgeList', async (req) => {
-  const { key } = req.payload;
-  console.log(key)
+  const { key , statuses } = req.payload;
+  const selectedStatuses = statuses.map(item => `'${item}'`).join(', ');
   try {
     let allTasks = [];
     let startAt = 0;
-    const maxResults = 100;
+    const maxResults = 50;
     
     while (true) {
-      const response = await api.asUser().requestJira(route`/rest/api/3/search?jql=project=${key} AND status In ("To Do") AND assignee IS NOT EMPTY&fields=assignee,created
+      const response = await api.asUser().requestJira(route`/rest/api/3/search?jql=project=${key} AND status In (${selectedStatuses}) AND assignee IS NOT EMPTY&fields=assignee,created
         &maxResults=${maxResults}
         &startAt=${startAt}
       `);
       const data = await response.json();
       const currentDate = new Date();
       const tasksWithAge = data.issues.map((issue) => {
-        const assignedDate = new Date(issue.fields.created);
+        const assignedDate = new Date();
         const ageInDays = Math.floor((currentDate - assignedDate) / (1000 * 60 * 60 * 24));
         return {
           issueKey: issue.key,

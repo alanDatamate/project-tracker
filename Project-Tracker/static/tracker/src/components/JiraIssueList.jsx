@@ -93,7 +93,7 @@ const JiraIssueList = () => {
         <>
           {filteredIssues && filteredIssues.length > 0 ? (
             <>
-              <IssueTable issues={filteredIssues} />
+            <IssueTable issues={filteredIssues} />
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

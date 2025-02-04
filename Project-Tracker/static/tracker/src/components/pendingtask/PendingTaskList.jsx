@@ -3,13 +3,16 @@ import { invoke } from '@forge/bridge';
 import CustomDropdown from '../Filters/CustomDropdown';
 import { useSelector } from 'react-redux';
 import Loading from '../Loading';
+import StatusFilterDropdown from '../Filters/StatusFilter';
 
 const PendingTaskList = () => {
     const filters = useSelector((state) => state.filters);
     const [taskCountsByMember, setTaskCountsByMember] = useState({});
     const [loading, setLoading] = useState(false);
-    const [selectedProject, setSelectedProject] = useState(null); // Track selected project
-
+    const [selectedProject, setSelectedProject] = useState(null); 
+    const [selectedStatus, setSelectedStatus] = useState(null);
+    const [statuses, setStatuses] = useState([]);
+    
     // Calculate task age based on assigned date
     const calculateAge = (assignedDate) => {
         const assignedDateObj = new Date(assignedDate);
@@ -55,30 +58,39 @@ const PendingTaskList = () => {
     const handleProjectChange = useCallback((selectedProject) => {
         setSelectedProject(selectedProject); // Update selected project
     }, []);
+    const handleStatusChange = useCallback((selectedStatus) => {
+        setSelectedStatus(selectedStatus); // Update selected status
+    }, []);
 
     // Fetch tasks when component mounts or when selected project changes
     useEffect(() => {
-        const fetchTasks = async () => {
-            if (!selectedProject) return; // Don't fetch if no project is selected
-            setLoading(true); // Set loading state to true while fetching
-
-            try {
-
-                // Fetch tasks with project filter included in the JQL query
-                const fetchedTasks = await invoke('PendingTaskAgeList', { key : selectedProject });
-                
-                // Group the tasks by assignee and age
-                const taskCounts = groupTasksByAssigneeAndAge(fetchedTasks);
-                setTaskCountsByMember(taskCounts);
-            } catch (error) {
-                console.error('Error fetching tasks:', error);
-            } finally {
-                setLoading(false); // Set loading state to false when done
-            }
-        };
-
-        fetchTasks();
+        fetchStatuses();
     }, [selectedProject]); // Trigger effect whenever the selected project changes
+
+
+    // Fetch tasks when the Generate button is clicked
+    const fetchTasks = async () => {
+        if (!selectedProject || !selectedStatus.length) return; // Don't fetch if no project or status is selected
+        setLoading(true); // Set loading state to true while fetching
+        try {
+            const fetchedTasks = await invoke('PendingTaskAgeList', { key: selectedProject, statuses: selectedStatus });
+            const taskCounts = groupTasksByAssigneeAndAge(fetchedTasks);
+            setTaskCountsByMember(taskCounts);
+        } catch (error) {
+            console.error('Error fetching tasks:', error);
+        } finally {
+            setLoading(false); // Set loading state to false when done
+        }
+    };
+    const fetchStatuses = async () => {
+        if (!selectedProject) return;
+        try {
+            const { statuses } = await invoke('getProjectStatus', { key: selectedProject });
+            setStatuses(statuses);
+        } catch (error) {
+            console.error('Error fetching status :', error);
+        }
+    };
 
     return (
         <section>
@@ -89,11 +101,35 @@ const PendingTaskList = () => {
                     onChange={handleProjectChange}
                     disableDispatch={true}
                 />
+                {selectedProject && (
+                    <>
+                        <StatusFilterDropdown
+                            selectedStatus={"Select Status"}
+                            statusOptions={statuses}
+                            project={selectedProject}
+                            onChange={handleStatusChange} />
+
+                        <div>
+                            <button
+                                onClick={fetchTasks}
+                                className="px-3 py-2 text-xs font-bold bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                disabled={loading}
+                            >
+                                {!loading ? (
+                                    "Generate"
+                                ) : (
+                                    "Loading..."
+                                )}
+                            </button>
+                        </div>
+
+                    </>
+                )}
             </nav>
 
             <div className="p-6">
                 {loading ? (
-                    <Loading/>
+                    <Loading />
                 ) : (
                     <div className="overflow-x-auto">
                         {Object.entries(taskCountsByMember).map(([assignee, ageGroups]) => (

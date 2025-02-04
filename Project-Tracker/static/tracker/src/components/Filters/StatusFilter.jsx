@@ -40,19 +40,26 @@ const StatusFilterDropdown = ({
   };
 
   return (
-    <div ref={dropdownRef} className="relative w-72">
+    <div ref={dropdownRef} className="relative text-sm font-semibold">
       <button
         onClick={toggleDropdown}
-        className={`w-full px-2 py-2 text-left bg-white rounded-lg hover:bg-gray-300 focus:outline-none flex items-center 
-          ${isOpen ? "border-b-2 border-blue-500" : ""}`}
+        className={`px-1 py-1 text-left  rounded-sm  focus:outline-none w-full flex items-center 
+          ${isOpen ? "border-b-2 border-blue-500" : ""} ${selectedStatus ? "bg-blue-100 " : "hover:bg-gray-300 bg-gray-200"} whitespace-nowrap text-ellipsis`}
+        type="button"
       >
-        <span className="mr-1">
-          {selectedStatuses.length > 0 ? selectedStatuses[0] : selectedStatus}
+        <span className={`${selectedStatuses[0] ? "text-blue-600 text-[13px]":""} mr-1`}>
+          {selectedStatuses.length > 1
+            ? `${selectedStatuses[0]} (+${selectedStatuses.length})`
+            : selectedStatuses.length > 0
+              ? selectedStatuses[0]
+              : selectedStatus}
         </span>
+
+
         <RiArrowDropDownLine size={25} />
       </button>
       {isOpen && (
-        <div className="absolute z-10 mt-1 left-0 w-full bg-white border border-gray-300 rounded-lg shadow-lg">
+        <div className="absolute z-20 mt-1 left-0 w-[20rem] bg-white border border-gray-300 rounded-lg shadow-lg">
           <ul className="max-h-72 overflow-y-auto">
             {statusOptions && statusOptions.length > 0 ? (
               statusOptions.map((status, index) => (

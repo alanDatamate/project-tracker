@@ -1,7 +1,7 @@
 import React from "react";
 import { Duration } from "luxon";
 
-const LoggedTimeCell = ({ aggregatetimespent }) => {
+const LoggedTimeCell = ({ aggregatetimespent , highlight  }) => {
   const formatTime = (timeInSeconds) => {
     if (!timeInSeconds) return "0h";
     const duration = Duration.fromObject({ seconds: timeInSeconds }).shiftTo(
@@ -11,7 +11,7 @@ const LoggedTimeCell = ({ aggregatetimespent }) => {
     return `${Math.floor(duration.hours)}h ${Math.floor(duration.minutes)}m`;
   };
 
-  return <td>{formatTime(aggregatetimespent)}</td>;
+  return <td className={highlight ? "highlight" : ""}>{formatTime(aggregatetimespent)}</td>;
 };
 
 export default LoggedTimeCell;
