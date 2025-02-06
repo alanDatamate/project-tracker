@@ -28,7 +28,7 @@ const IssueTable = ({ issues }) => {
 
   return (
     <div className="overflow-x-auto max-w-full overflow-y-auto max-h-[500px] custom-scrollbar">
-      <table className="table table-xs table-pin-rows table-pin-cols min-w-[1800px]">
+      <table className="table table-xs table-pin-rows table-pin-cols min-w-[1600px]">
         <thead>
           <tr>
             <th className="w-28 border-r-2" >Key</th>
@@ -63,7 +63,8 @@ const IssueTable = ({ issues }) => {
             issues.map((issue, index) => (
               <tr key={index}>
 
-                <th className="border-r-2">{issue?.key}</th>
+                <th className="border-r-2 underline text-xs text-blue-600 font-bold cursor-pointer"
+                 onClick={() => handleViewClick(issue.key)}>{issue?.key}</th>
                 <td title={issue.fields?.summary} className="cursor-pointer">
                   {issue.fields?.summary &&
                     issue.fields?.summary.length > 30
@@ -120,6 +121,7 @@ const IssueTable = ({ issues }) => {
                 </td>
                 <td> <LoggedTimeCell
                   aggregatetimespent={issue.fields?.timespent}
+                  highlight={issue.fields?.aggregatetimeoriginalestimate < issue.fields?.timespent ? "highlight" :""}
                 />
                 </td>
                 {SelectedStatusName && (
@@ -129,20 +131,14 @@ const IssueTable = ({ issues }) => {
                         ? issue.fields.EndDate.split("T")[0]
                         : "N/A"}
                     </td>
-                    <td >
+                    <td className="highlight">
                       {issue.fields?.statusUpdatedDate
                         ? issue.fields.statusUpdatedDate.split("T")[0]
                         : "N/A"}
                     </td>
                   </>
                 )}
-                <td> <button
-                  className="underline text-xs text-blue-600 font-bold"
-                  onClick={() => handleViewClick(issue.key)}
-                >
-                  View
-                </button>
-                </td>
+             
               </tr>
             ))
           ) : (

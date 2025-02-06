@@ -8,7 +8,6 @@ import { LuUserCircle2 } from 'react-icons/lu';
 import Avatar from '../shared/Avatar';
 import StatusFilterDropdown from '../Filters/StatusFilter';
 import AssigneeFilterDropdown from '../Filters/AssigneeFilter';
-import { RiSpectrumFill } from 'react-icons/ri';
 
 const FetchPendingTasksForDevelopers = () => {
     const [tasks, setTasks] = useState([]);
@@ -35,9 +34,7 @@ const FetchPendingTasksForDevelopers = () => {
     const [showTable, setShowTable] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalIssues, setTotalIssues] = useState(0);
-    const [startDate , setStartDate] = useState("")
-    const [endDate, setEndDate] = useState("")
-
+    const [startDate, setStartDate] = useState("")
     const IssuesPerPage = 50;
 
     useEffect(() => {
@@ -76,19 +73,14 @@ const FetchPendingTasksForDevelopers = () => {
     };
 
     const generateTask = async (page = 1) => {
-        if (!startDate && !endDate) {
-            
-        }else if(!startDate){
-            alert("Please select From Date..");
+        if (!selectedStartDateField) {
+            alert("Please select start Date field..");
             return;
-        } else if (!endDate) {
-            alert("Please select End Date..");
+        } else if (!selectedEndDateField) {
+            alert("Please select End Date field..");
             return;
-        } else if (new Date(startDate) > new Date(endDate)) {
-            alert("Start Date cannot be later than End Date.");
-            return;
-        }
-        
+        } 
+
         setLoading(true);
         setShowTable(true);
         const selectedUserFieldName = selectedUserField ? userCustomFields.find((field) => field.id == selectedUserField) : null;
@@ -98,7 +90,7 @@ const FetchPendingTasksForDevelopers = () => {
         setshowSelectedStartDateField(selectedStartDateField);
         setshowSelectedEndDateField(selectedEndDateField);
 
-        const startAt = (page - 1) * IssuesPerPage; // Calculate startAt dynamically based on the page
+        const startAt = (page - 1) * IssuesPerPage;
         try {
             const fetchedTasks = await invoke("FetchPendingTasksForDevelopers", {
                 project,
@@ -106,15 +98,14 @@ const FetchPendingTasksForDevelopers = () => {
                 status,
                 assigneeNames,
                 startAt,
-                maxResults: IssuesPerPage, 
+                maxResults: IssuesPerPage,
                 startDate,
-                endDate,
                 selectedStartDateField,
                 selectedEndDateField
             });
             if (fetchedTasks && fetchedTasks.issues) {
                 setTasks(fetchedTasks.issues);
-                setTotalIssues(fetchedTasks.total); 
+                setTotalIssues(fetchedTasks.total);
             } else {
                 console.log('No tasks found.');
             }
@@ -185,14 +176,10 @@ const FetchPendingTasksForDevelopers = () => {
         }
         return pageNumbers;
     };
-   
-    const handleStartDateChange = (e)=>{
+
+    const handleStartDateChange = (e) => {
         setStartDate(e.target.value)
     }
-    const handleEndDateChange = (e)=>{
-        setEndDate(e.target.value)
-    }
-    
 
     return (
         <>
@@ -233,19 +220,12 @@ const FetchPendingTasksForDevelopers = () => {
                                 ))}
                             </select>
                         </div>
-                       
+
                         <div >
                             <input
-                            className="text-sm font-bold px-2 py-1 text-left rounded-lg focus:outline-none flex items-center w-full whitespace-nowrap cursor-pointer border-b border-b-gray-300"
+                                className="text-sm font-bold px-2 py-1 text-left rounded-lg focus:outline-none flex items-center w-full whitespace-nowrap cursor-pointer border-b border-b-gray-300"
                                 type='date'
                                 onChange={handleStartDateChange}
-                            />
-                        </div>
-                        <div >
-                        <input
-                            className="text-sm font-bold px-2 py-1 text-left rounded-lg focus:outline-none flex items-center w-full whitespace-nowrap cursor-pointer border-b border-b-gray-300"
-                                type='date'
-                                onChange={handleEndDateChange}
                             />
                         </div>
                         <StatusFilterDropdown
@@ -394,60 +374,60 @@ const FetchPendingTasksForDevelopers = () => {
                 ) : (
                     <Loading />
                 )}
-                
+
             </div>
             {tasks && tasks.length > 49 && (
-                    <section className="pagination mt-4 flex justify-between items-center">
-                        <div>
-                            <p className="text-sm text-gray-700">
-                                Page {currentPage} of {totalPages}
-                            </p>
-                        </div>
+                <section className="pagination mt-4 flex justify-between items-center">
+                    <div>
+                        <p className="text-sm text-gray-700">
+                            Page {currentPage} of {totalPages}
+                        </p>
+                    </div>
 
-                        <div className="flex gap-4">
-                            <button
-                                onClick={handlePrevPage}
-                                className="bg-gray-200 text-gray-700 px-3 text-xs font-bold py-1 rounded-sm hover:bg-gray-300"
-                                disabled={currentPage === 1 || loading}
-                            >
-                                &lt;
-                            </button>
-                            {getPaginationPages().map((page, index) => {
-                                if (page === "...") {
-                                    return (
-                                        <span
-                                            key={index}
-                                            className="px-3 text-xs py-1 font-bold text-gray-700"
-                                        >
-                                            ...
-                                        </span>
-                                    );
-                                } else {
-                                    return (
-                                        <button
-                                            key={page}
-                                            onClick={() => handlePageClick(page)} // Trigger data fetch when clicking a page
-                                            className={`px-3 text-xs py-1 rounded-sm font-bold ${currentPage === page
-                                                ? "bg-blue-600 text-white"
-                                                : "bg-gray-200 text-gray-700"
-                                                } hover:bg-gray-300`}
-                                        >
-                                            {page}
-                                        </button>
-                                    );
-                                }
-                            })}
+                    <div className="flex gap-4">
+                        <button
+                            onClick={handlePrevPage}
+                            className="bg-gray-200 text-gray-700 px-3 text-xs font-bold py-1 rounded-sm hover:bg-gray-300"
+                            disabled={currentPage === 1 || loading}
+                        >
+                            &lt;
+                        </button>
+                        {getPaginationPages().map((page, index) => {
+                            if (page === "...") {
+                                return (
+                                    <span
+                                        key={index}
+                                        className="px-3 text-xs py-1 font-bold text-gray-700"
+                                    >
+                                        ...
+                                    </span>
+                                );
+                            } else {
+                                return (
+                                    <button
+                                        key={page}
+                                        onClick={() => handlePageClick(page)} // Trigger data fetch when clicking a page
+                                        className={`px-3 text-xs py-1 rounded-sm font-bold ${currentPage === page
+                                            ? "bg-blue-600 text-white"
+                                            : "bg-gray-200 text-gray-700"
+                                            } hover:bg-gray-300`}
+                                    >
+                                        {page}
+                                    </button>
+                                );
+                            }
+                        })}
 
-                            <button
-                                onClick={handleNextPage}
-                                className="bg-gray-200 text-gray-700 font-bold px-3 text-xs py-1 rounded-sm hover:bg-gray-300"
-                                disabled={currentPage * IssuesPerPage >= totalIssues || loading}
-                            >
-                                &gt;
-                            </button>
-                        </div>
-                    </section>
-                )}
+                        <button
+                            onClick={handleNextPage}
+                            className="bg-gray-200 text-gray-700 font-bold px-3 text-xs py-1 rounded-sm hover:bg-gray-300"
+                            disabled={currentPage * IssuesPerPage >= totalIssues || loading}
+                        >
+                            &gt;
+                        </button>
+                    </div>
+                </section>
+            )}
         </>
     );
 };

@@ -140,7 +140,7 @@ resolver.define("getConflictIssues", async (req) => {
                 },
                 status: { name: issue.fields.status.name },
                 aggregatetimeoriginalestimate: issue.fields.aggregatetimeoriginalestimate || 0,
-                timeSpent: issue.fields.timespent || 0,
+                timespent: issue.fields.timespent || 0,
                 aggregateremainingestimate: issue.fields.aggregateremainingestimate || 0,
                 statusUpdatedDate: statusUpdatedDate,
                 EndDate: devEndDate,
@@ -329,7 +329,7 @@ resolver.define('getAssigneesTaskScheduledList', async (req) => {
 });
 
 resolver.define('FetchPendingTasksForDevelopers', async (req) => {
-  const { project, user, status, assigneeNames, startAt = 0, maxResults = 50, startDate, endDate,
+  const { project, user, status, assigneeNames, startAt = 0, maxResults = 50, startDate,
     selectedEndDateField , selectedStartDateField
    } = req.payload;
   try {
@@ -342,8 +342,8 @@ resolver.define('FetchPendingTasksForDevelopers', async (req) => {
       : null;
 
     let jqlQuery = `project = "${project}"`;
-    if (startDate && endDate) {
-      jqlQuery += ` And cf[${selectedStartDateField.match(/\d+/)[0]}] >= ${startDate} AND cf[${selectedEndDateField.match(/\d+/)[0]}] <= ${endDate}`
+    if (startDate) {
+      jqlQuery += ` And cf[${selectedStartDateField.match(/\d+/)[0]}] >= ${startDate} `
     }
     if (statusesArray) {
       jqlQuery += ` AND STATUS IN (${statusesArray})`;
@@ -356,7 +356,6 @@ resolver.define('FetchPendingTasksForDevelopers', async (req) => {
     if (assigneeNamesArray) {
       jqlQuery += ` AND "developer[people]" IN (${assigneeNamesArray})`;
     }
-
     const response = await api.asUser().requestJira(route`/rest/api/3/search?jql=${jqlQuery}  ORDER BY created DESC&startAt=${validStartAt}&maxResults=${maxResults}`);
     const data = await response.json();
     return data;

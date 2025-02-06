@@ -87,12 +87,14 @@ const getIssuesForStatuses = async (
         .map((assignee) => `"${assignee.displayName}"`)
         .join(", ")})`
     : "";
+  
   const fullJql = `
     ${jql}
-    AND status CHANGED TO ("${status}", "DEV IN PROGRESS","TO DO","READY FOR DEV","IN TASK REVIEW","PENDING CLARIFICATION") DURING ("${startDate}", "${endDate}")
+    AND status CHANGED TO ("${status}", "DEV IN PROGRESS","READY FOR DEV","IN TASK REVIEW","PENDING CLARIFICATION") DURING ("${startDate}", "${endDate}")
     ${assigneeFilter}
-    AND "${EndDateForConflictIssue}" IS NOT NULL
+    AND "${EndDateForConflictIssue}" IS NOT NULL 
   `.trim();
+
   const response = await api
     .asUser()
     .requestJira(

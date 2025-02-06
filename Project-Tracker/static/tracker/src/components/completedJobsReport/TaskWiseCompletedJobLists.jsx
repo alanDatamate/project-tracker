@@ -303,10 +303,10 @@ const TaskWiseCompletedJobLists = () => {
                                     {customFields.filter((field) => field.id == showSelectedStartDateField).map((field) => (
                                         <td key={field.id} className="w-64">{field.name}</td>
                                     ))}
+                                    <td className="w-44">Actual Start Updated Date</td>
                                     {endDateCustomFields.filter((field) => field.id == showSelectedEndDateField).map((field) => (
                                         <td key={field.id} className="w-64">{field.name}</td>
                                     ))}
-                                    <td className="w-44">Actual Start Updated Date</td>
                                     <td className="w-44">Actual End Updated Date</td>
                                     <td className="w-44">Estimated Time</td>
                                     <td className="w-44">Actual Time</td>
@@ -367,23 +367,23 @@ const TaskWiseCompletedJobLists = () => {
                                                         {fields[field.id] || '--'}
                                                     </td>
                                                 ))}
-                                                {endDateCustomFields.filter((field) => field.id == showSelectedEndDateField).map((field) => (
-                                                    <td key={field.id} >
-                                                        {fields[field.id] || '--'}
-                                                    </td>
-                                                ))}
-                                                {showSelectedActualStartStatusField && (
+                                                   {showSelectedActualStartStatusField && (
                                                     <td key={showSelectedActualStartStatusField}
                                                         className={
                                                             fields[showSelectedEndDateField] && 
                                                         task[showSelectedActualStartStatusField] && 
-                                                        new Date(task[showSelectedActualStartStatusField]) > new Date(fields[showSelectedEndDateField])
+                                                        new Date(task[showSelectedActualStartStatusField]) > new Date(fields[showSelectedStartDateField])
                                                           ? 'highlight'
                                                           : ''
                                                       }>
                                                         {task[showSelectedActualStartStatusField] || '--'}
                                                     </td>
                                                 )}
+                                                {endDateCustomFields.filter((field) => field.id == showSelectedEndDateField).map((field) => (
+                                                    <td key={field.id} >
+                                                        {fields[field.id] || '--'}
+                                                    </td>
+                                                ))}                                             
                                                 {showselectedActualEndStatusField && (
                                                     <td key={showselectedActualEndStatusField}
                                                         className={
