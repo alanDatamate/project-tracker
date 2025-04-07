@@ -1,6 +1,6 @@
 import React from 'react'
 
-const ErrorModal = ({ isModalOpen, closeModal }) => {
+const ErrorModal = ({isModalOpen , closeModal , error}) => {
     return (
         <section className={`fixed z-10 inset-0 overflow-y-auto transition-all duration-300 ${isModalOpen ? 'modal-fade-in' : 'modal-fade-out'}`} >
             <div className="flex items-center justify-center min-h-screen px-4 text-center">

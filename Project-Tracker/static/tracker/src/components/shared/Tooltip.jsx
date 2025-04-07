@@ -7,8 +7,7 @@ const Tooltip = ({ text }) => {
                        transform -translate-x-1/2 mt-2 
                        w-max max-w-2xl px-2 py-1 text-xs text-white
                        bg-gray-600 rounded shadow-lg 
-                       opacity-0 group-hover:opacity-100 break-words z-50 pointer-events-none"
-    >
+                       opacity-0 group-hover:opacity-100 break-words z-50 pointer-events-none">
       {text}
     </div>
   );

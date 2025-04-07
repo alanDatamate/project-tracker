@@ -5,6 +5,10 @@ const getProjects = async () => {
   const response = await api.asUser().requestJira(route`/rest/api/3/project`);
   return response.json();
 };
+const   getBoards = async () => {
+  const response = await api.asUser().requestJira(route`/rest/agile/1.0/board`);
+  return response.json();
+};
 /** Fetch all assignees */
 const getAssigneesForProject = async (projectKey) => {
   const response = await api
@@ -83,17 +87,19 @@ const getIssuesForStatuses = async (
         .map((assignee) => `"${assignee.displayName}"`)
         .join(", ")})`
     : "";
+  
   const fullJql = `
     ${jql}
-    AND status CHANGED TO ("${status}", "DEV IN PROGRESS","TO DO","READY FOR DEV","IN TASK REVIEW","PENDING CLARIFICATION") DURING ("${startDate}", "${endDate}")
+    AND status CHANGED TO ("${status}", "DEV IN PROGRESS","READY FOR DEV","IN TASK REVIEW","PENDING CLARIFICATION") DURING ("${startDate}", "${endDate}")
     ${assigneeFilter}
-    AND "${EndDateForConflictIssue}" IS NOT NULL
+    AND "${EndDateForConflictIssue}" IS NOT NULL 
   `.trim();
+
   const response = await api
     .asUser()
     .requestJira(
       route`/rest/api/3/search?jql=${fullJql}&expand=changelog &startAt=${startAt}&maxResults=${maxResults}`
-    );
+  );
   return response.json();
 };
 
@@ -107,6 +113,7 @@ const getAssigneesScheduledIssuesList = async (project, startDate, endDate, assi
 
 export {
   getProjects,
+  getBoards,
   getDateFieldsForProject,
   getStatusesForProject,
   getAssigneesForProject,

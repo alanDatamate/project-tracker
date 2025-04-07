@@ -1,62 +1,61 @@
 import { invoke } from '@forge/bridge';
 import React, { useCallback, useEffect, useState } from 'react';
+import LoggedTimeCell from '../TimeCell';
 import CustomDropdown from '../Filters/CustomDropdown';
 import { useSelector } from 'react-redux';
 import Loading from '../Loading';
 import { router } from "@forge/bridge";
 import { LuUserCircle2 } from 'react-icons/lu';
 import Avatar from '../shared/Avatar';
-import StatusFilterDropdown from '../Filters/StatusFilter';
-import AssigneeFilterDropdown from '../Filters/AssigneeFilter';
 
-const FetchPendingTasksForDevelopers = () => {
+
+const calculateVariation = (estimated, actual) => {
+    if (estimated && actual && actual > estimated) {
+        return `${Math.abs(((actual - estimated) / estimated) * 100).toFixed(2)}%`;
+    }
+    return "--";
+};
+
+const TaskWiseCompletedJobLists = () => {
     const [tasks, setTasks] = useState([]);
     const [project, setProject] = useState(null);
-    const filters = useSelector((state) => state.filters);
-    const [projectStatus, setProjectStatus] = useState([]);
-    const [selectedStartDateField, setSelectedStartDateField] = useState('');
-    const [selectedEndDateField, setSelectedEndDateField] = useState('');
+    const filters = useSelector((state) => state.filters)
     const [loading, setLoading] = useState(false);
     const [customFields, setCustomFields] = useState([]);
+    const [projectStatus, setProjectStatus] = useState([]);
     const [endDateCustomFields, setEndDateCustomFields] = useState([]);
     const [selectedUserField, setSelectedUserField] = useState('');
+    const [selectedEndDateField, setSelectedEndDateField] = useState('');
+    const [selectedStatus, setSelectedStatus] = useState('');
+    const [selectedActualEndStatus, setSelectedActualEndStatus] = useState('');
+    const [selectedStartDateField, setSelectedStartDateField] = useState('');
     const [showSelectedUserField, setShowSelectedUserField] = useState('');
     const [showSelectedStartDateField, setshowSelectedStartDateField] = useState('');
     const [showSelectedEndDateField, setshowSelectedEndDateField] = useState('');
-    const [status, setStatus] = useState("");
-    const [assignees, setAssignees] = useState([]);
-    const [assigneeNames, setAssigneeNames] = useState([]);
+    const [showselectedActualEndStatusField, setSelectedActualEndStatusField] = useState('');
+    const [showSelectedActualStartStatusField, setSelectedActualStartStatusField] = useState('');
     const [userCustomFields, setUserCustomFields] = useState([
-        { "id": "customfield_10059", "name": "Developer" },
-        { "id": "customfield_10063", "name": "Imp Assignee" },
-        { "id": "customfield_10060", "name": "QA" }
-    ]);
+        {
+            "id": "customfield_10059",
+            "name": "Developer"
+        }, {
+            "id": "customfield_10063",
+            "name": "Imp Assignee"
+        }, {
+            "id": "customfield_10060",
+            "name": "QA",
+        }]);
     const [showTable, setShowTable] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalIssues, setTotalIssues] = useState(0);
-    const [startDate, setStartDate] = useState("")
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+
     const IssuesPerPage = 50;
 
     useEffect(() => {
         fetchCustomFields();
     }, [project]);
-
-    useEffect(() => {
-        if (project) {
-            const getAssigneesForProject = async () => {
-                try {
-                    const response = await invoke("getAssigneesForProject", {
-                        key: project,
-                    });
-                    setAssignees(response.assignees);
-                } catch (error) {
-                    console.log(error);
-                }
-            };
-            getAssigneesForProject();
-        }
-    }, [project]);
-
     const fetchCustomFields = async () => {
         if (!project) {
             setCustomFields([]);
@@ -73,66 +72,59 @@ const FetchPendingTasksForDevelopers = () => {
     };
 
     const generateTask = async (page = 1) => {
-        if (!selectedStartDateField) {
-            alert("Please select start Date field..");
+        if (!startDate && !endDate) {
+            
+        }else if(!startDate){
+            alert("Please select From Date..");
             return;
-        } else if (!selectedEndDateField) {
-            alert("Please select End Date field..");
+        } else if (!endDate) {
+            alert("Please select End Date..");
             return;
-        } 
-
-        setLoading(true);
+        } else if (new Date(startDate) > new Date(endDate)) {
+            alert("Start Date cannot be later than End Date.");
+            return;
+        }
+        
+        if (!selectedEndDateField || !selectedStatus || !selectedStartDateField || !selectedActualEndStatus) {
+            return
+        }
+        setLoading(true)
         setShowTable(true);
         const selectedUserFieldName = selectedUserField ? userCustomFields.find((field) => field.id == selectedUserField) : null;
         if (selectedUserFieldName) {
-            setShowSelectedUserField(selectedUserFieldName.id);
+            setShowSelectedUserField(selectedUserFieldName.id)
         }
-        setshowSelectedStartDateField(selectedStartDateField);
         setshowSelectedEndDateField(selectedEndDateField);
-
+        setshowSelectedStartDateField(selectedStartDateField);
+        setSelectedActualStartStatusField(selectedStatus)
+        setSelectedActualEndStatusField(selectedActualEndStatus)
         const startAt = (page - 1) * IssuesPerPage;
         try {
-            const fetchedTasks = await invoke("FetchPendingTasksForDevelopers", {
-                project,
-                user: selectedUserFieldName,
-                status,
-                assigneeNames,
+            const fetchedTasks = await invoke("TaskWiseCompletedJobLists", {
+                project, user: selectedUserFieldName, selectedEndDateField,
+                selectedStatus, selectedStartDateField, selectedActualEndStatus,
                 startAt,
                 maxResults: IssuesPerPage,
                 startDate,
-                selectedStartDateField,
-                selectedEndDateField
+                endDate
             });
-            if (fetchedTasks && fetchedTasks.issues) {
-                setTasks(fetchedTasks.issues);
-                setTotalIssues(fetchedTasks.total);
-            } else {
-                console.log('No tasks found.');
-            }
+            setTasks(fetchedTasks.issues);
+            setTotalIssues(fetchedTasks.total);
         } catch (error) {
-            console.log(error);
+            console.log(error)
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    };
-
-    const handleStatusChange = (statuses) => {
-        setStatus(statuses.join(","));
     };
 
     const handleProjectChange = useCallback((selectedProject) => {
         setProject(selectedProject);
-    }, []);
+    }, [])
 
     const handleViewClick = (issueKey) => {
         const externalUrl = `https://datamate.atlassian.net/jira/software/projects/${project}/issues/${issueKey}`;
         router.open(externalUrl);
     };
-
-    const handleAssigneeChange = (assignee) => {
-        setAssigneeNames(assignee);
-    };
-
     const handleNextPage = () => {
         if (currentPage * IssuesPerPage < totalIssues) {
             const newPage = currentPage + 1;
@@ -180,6 +172,9 @@ const FetchPendingTasksForDevelopers = () => {
     const handleStartDateChange = (e) => {
         setStartDate(e.target.value)
     }
+    const handleEndDateChange = (e) => {
+        setEndDate(e.target.value)
+    }
 
     return (
         <>
@@ -196,7 +191,7 @@ const FetchPendingTasksForDevelopers = () => {
                             <select
                                 value={selectedStartDateField}
                                 onChange={(e) => setSelectedStartDateField(e.target.value)}
-                                className="text-sm font-bold px-2 py-1 text-left rounded-lg focus:outline-none flex items-center w-full whitespace-nowrap cursor-pointer border-b border-b-gray-300"
+                                className="text-sm font-bold px-3 py-1 text-left rounded-lg focus:outline-none flex items-center w-full whitespace-nowrap cursor-pointer border-b border-b-gray-300"
                             >
                                 <option value="">Scheduled Start Field</option>
                                 {customFields && customFields.length > 0 && customFields.map((field) => (
@@ -210,7 +205,7 @@ const FetchPendingTasksForDevelopers = () => {
                             <select
                                 value={selectedEndDateField}
                                 onChange={(e) => setSelectedEndDateField(e.target.value)}
-                                className="text-sm font-bold px-2 py-1 text-left rounded-lg focus:outline-none flex items-center w-full whitespace-nowrap cursor-pointer border-b border-b-gray-300"
+                                className="text-sm font-bold px-3 py-1 text-left rounded-lg focus:outline-none flex items-center w-full whitespace-nowrap cursor-pointer border-b border-b-gray-300"
                             >
                                 <option value="">Scheduled end Field</option>
                                 {endDateCustomFields && endDateCustomFields.length > 0 && endDateCustomFields.map((field) => (
@@ -220,26 +215,58 @@ const FetchPendingTasksForDevelopers = () => {
                                 ))}
                             </select>
                         </div>
-
                         <div >
                             <input
-                                className="text-sm font-bold px-2 py-1 text-left rounded-lg focus:outline-none flex items-center w-full whitespace-nowrap cursor-pointer border-b border-b-gray-300"
+                            className="text-sm font-bold px-2 py-1 text-left rounded-lg focus:outline-none flex items-center w-full whitespace-nowrap cursor-pointer border-b border-b-gray-300"
                                 type='date'
                                 onChange={handleStartDateChange}
                             />
                         </div>
-                        <StatusFilterDropdown
-                            selectedStatus={"Lookup Status"}
-                            statusOptions={projectStatus}
-                            onChange={handleStatusChange}
-                            project={project}
-                        />
+                        <div >
+                        <input
+                            className="text-sm font-bold px-2 py-1 text-left rounded-lg focus:outline-none flex items-center w-full whitespace-nowrap cursor-pointer border-b border-b-gray-300"
+                                type='date'
+                                onChange={handleEndDateChange}
+                                
+                            />
+                        </div>
+                        <div >
+                            <select
+                                value={selectedStatus}
+                                onChange={(e) => setSelectedStatus(e.target.value)}
+                                className="text-sm font-bold px-3 py-1 text-left rounded-lg focus:outline-none flex items-center w-full whitespace-nowrap cursor-pointer border-b border-b-gray-300"
+                            >
+                                <option value="">Actual Start</option>
+                                {projectStatus &&
+                                    projectStatus.map((status) => (
+                                        <option key={status.name} value={status.name}>
+                                            {status.name}
+                                        </option>
+                                    ))}
+                            </select>
+                        </div>
+                        <div >
+                            <select
+                                value={selectedActualEndStatus}
+                                onChange={(e) => setSelectedActualEndStatus(e.target.value)}
+                                className="text-sm font-bold px-3 py-1 text-left rounded-lg focus:outline-none flex items-center w-full whitespace-nowrap cursor-pointer border-b border-b-gray-300"
+                            >
+                                <option value="">Actual End</option>
+                                {projectStatus &&
+                                    projectStatus.map((status) => (
+                                        <option key={status.name} value={status.name}>
+                                            {status.name}
+                                        </option>
+                                    ))}
+                            </select>
+                        </div>
                         {project == "HBM" && (
-                            <div className='flex gap-2'>
+                            <div>
+
                                 <select
                                     value={selectedUserField}
                                     onChange={(e) => setSelectedUserField(e.target.value)}
-                                    className="text-sm font-bold px-2 py-1 text-left rounded-lg focus:outline-none flex items-center w-full whitespace-nowrap cursor-pointer border-b border-b-gray-300"
+                                    className="text-sm font-bold px-3 py-1 text-left rounded-lg focus:outline-none flex items-center w-full whitespace-nowrap cursor-pointer border-b border-b-gray-300"
                                 >
                                     <option value="">Select a user field</option>
                                     {userCustomFields && userCustomFields.length > 0 && userCustomFields.map((field) => (
@@ -250,82 +277,81 @@ const FetchPendingTasksForDevelopers = () => {
                                 </select>
                             </div>
                         )}
-                        <div>
-                            {selectedUserField && (
-                                <AssigneeFilterDropdown
-                                    options={assignees}
-                                    onChange={handleAssigneeChange}
-                                    project={project}
-                                />
-                            )}
-                        </div>
 
                         <button
-                            className="text-sm bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-sm text-white"
+                            className="text-sm bg-blue-500 hover:bg-blue-600 p-1 text-white"
                             onClick={generateTask}
                         >
                             Generate
                         </button>
                     </>
                 )}
-
             </nav>
             <div className="overflow-x-auto max-w-full overflow-y-auto max-h-[500px] custom-scrollbar">
                 {!loading ? (
                     showTable && (
-                        <table className="table table-xs table-pin-rows table-pin-cols min-w-[1700px]">
+                        <table className="table table-xs table-pin-rows table-pin-cols min-w-[1800px]">
                             <thead>
                                 <tr >
-                                    <th className="w-28 border-r-2">Key</th>
-                                    <td className="w-72">Summary</td>
-                                    <td className="w-72">Assignee</td>
-                                    {showSelectedUserField && (
+                                    <th className="w-36 border-r-2">Key</th>
+                                    <td className="w-80">Summary</td>
+                                    {showSelectedUserField ? (
                                         <td className="w-64">{userCustomFields.find(field => field.id === showSelectedUserField)?.name}</td>
+                                    ) : (
+                                        <td className="w-64">assignee</td>
                                     )}
                                     {customFields.filter((field) => field.id == showSelectedStartDateField).map((field) => (
                                         <td key={field.id} className="w-64">{field.name}</td>
                                     ))}
+                                    <td className="w-44">Actual Start Updated Date</td>
                                     {endDateCustomFields.filter((field) => field.id == showSelectedEndDateField).map((field) => (
                                         <td key={field.id} className="w-64">{field.name}</td>
                                     ))}
-                                    <td className="w-44">Current Status</td>
+                                    <td className="w-44">Actual End Updated Date</td>
+                                    <td className="w-44">Estimated Time</td>
+                                    <td className="w-44">Actual Time</td>
+                                    <td className="w-44">Variation %</td>
                                 </tr>
                             </thead>
                             <tbody>
                                 {tasks && tasks.length > 0 ? (
                                     tasks.map((task) => {
                                         const { fields } = task;
+                                        const estimatedTime = fields.timeoriginalestimate || 0;
+                                        const actualTime = fields.timespent || 0;
                                         return (
                                             <tr key={task.id} className="border-b hover:bg-gray-50 text-xs font-semibold">
-                                                <th className="border-r-2 text-blue-500 underline cursor-pointer" onClick={() => handleViewClick(task.key)}>{task.key}</th>
+                                                <th className="border-r-2 underline text-blue-600 cursor-pointer"
+                                                onClick={() => handleViewClick(task.key)}>{task.key}</th>
                                                 <td className="cursor-pointer"
                                                     title={fields.summary}>
                                                     {fields.summary.length > 30
                                                         ? `${fields.summary.slice(0, 30)}...`
                                                         : fields.summary}
                                                 </td>
-                                                <td>
-                                                    <div className="flex items-center">
-                                                        {fields?.assignee ? (
-                                                            <>
-                                                                <Avatar assignee={fields.assignee} />
-                                                                {fields.assignee.displayName}
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <LuUserCircle2 className="w-6 h-6 rounded-full mr-2" />
-                                                                {"Unassigned"}
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                {showSelectedUserField && (
+                                                {showSelectedUserField ? (
                                                     <td>
                                                         <div className="flex items-center">
-                                                            {fields?.[showSelectedUserField] ? (
+                                                            {task.fields?.[showSelectedUserField] ? (
                                                                 <>
-                                                                    <Avatar assignee={fields?.[showSelectedUserField]?.[0]} />
-                                                                    {fields?.[showSelectedUserField]?.[0].displayName}
+                                                                    <Avatar assignee={task.fields?.[showSelectedUserField]?.[0]} />
+                                                                    {task.fields?.[showSelectedUserField]?.[0].displayName}
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <LuUserCircle2 className="w-6 h-6 rounded-full mr-2" />
+                                                                    {"Unassigned"}
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                ) : (
+                                                    <td>
+                                                        <div className="flex items-center">
+                                                            {fields?.assignee ? (
+                                                                <>
+                                                                    <Avatar assignee={fields.assignee} />
+                                                                    {fields.assignee.displayName}
                                                                 </>
                                                             ) : (
                                                                 <>
@@ -341,22 +367,49 @@ const FetchPendingTasksForDevelopers = () => {
                                                         {fields[field.id] || '--'}
                                                     </td>
                                                 ))}
+                                                   {showSelectedActualStartStatusField && (
+                                                    <td key={showSelectedActualStartStatusField}
+                                                        className={
+                                                            fields[showSelectedEndDateField] && 
+                                                        task[showSelectedActualStartStatusField] && 
+                                                        new Date(task[showSelectedActualStartStatusField]) > new Date(fields[showSelectedStartDateField])
+                                                          ? 'highlight'
+                                                          : ''
+                                                      }>
+                                                        {task[showSelectedActualStartStatusField] || '--'}
+                                                    </td>
+                                                )}
                                                 {endDateCustomFields.filter((field) => field.id == showSelectedEndDateField).map((field) => (
                                                     <td key={field.id} >
                                                         {fields[field.id] || '--'}
                                                     </td>
-                                                ))}
-                                                <td className="py-3 px-4">
-                                                    <span
-                                                        className={`py-1 px-3 rounded-full text-xs ${task.fields.status.name === 'In Progress'
-                                                            ? 'bg-yellow-200 text-yellow-800'
-                                                            : task.fields.status.name === 'To Do'
-                                                                ? 'bg-blue-200 text-blue-800'
-                                                                : 'bg-green-200 text-green-800'}`}
-                                                    >
-                                                        {task.fields.status.name}
-                                                    </span>
+                                                ))}                                             
+                                                {showselectedActualEndStatusField && (
+                                                    <td key={showselectedActualEndStatusField}
+                                                        className={
+                                                            fields[showSelectedEndDateField] && 
+                                                        task[showselectedActualEndStatusField] && 
+                                                        new Date(task[showselectedActualEndStatusField]) > new Date(fields[showSelectedEndDateField])
+                                                          ? 'highlight'
+                                                          : ''
+                                                      }>
+                                                        {task[showselectedActualEndStatusField] || '--'}
+                                                    </td>
+                                                )}
+                                                <td >{estimatedTime == "--" ? "--" : <LoggedTimeCell aggregatetimespent={estimatedTime} />}</td>
+                                                <td>
+                                                    {
+                                                        actualTime === "--"
+                                                            ? "--"
+                                                            : (
+                                                                <LoggedTimeCell
+                                                                    aggregatetimespent={actualTime}
+                                                                    highlight={parseFloat(actualTime) > parseFloat(estimatedTime)}
+                                                                />
+                                                            )
+                                                    }
                                                 </td>
+                                                <td >{calculateVariation(estimatedTime, actualTime)}</td>
                                             </tr>
                                         )
                                     })
@@ -369,14 +422,12 @@ const FetchPendingTasksForDevelopers = () => {
                                 )}
                             </tbody>
                         </table>
-
                     )
                 ) : (
                     <Loading />
                 )}
-
             </div>
-            {tasks && tasks.length > 49 && (
+            {tasks && tasks.length >= 49 && (
                 <section className="pagination mt-4 flex justify-between items-center">
                     <div>
                         <p className="text-sm text-gray-700">
@@ -432,4 +483,4 @@ const FetchPendingTasksForDevelopers = () => {
     );
 };
 
-export default FetchPendingTasksForDevelopers;
+export default TaskWiseCompletedJobLists;

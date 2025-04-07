@@ -50,7 +50,7 @@ const AssigneeFilterDropdown = ({ options, onChange, project }) => {
   }, [project ]);
 
   const renderSelectedLabel = useMemo(() => {
-    if (selectedAssignees.length === 0) return "Users";
+    if (selectedAssignees.length === 0) return "assignee";
     if (selectedAssignees.length === 1) {
       const name = selectedAssignees[0]?.displayName || "Unassigned";
       return name.length > 8 ? `${name.slice(0, 8)}...` : name;

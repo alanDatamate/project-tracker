@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
+import { MdKeyboardArrowDown } from "react-icons/md";
 import {
   fetchConflictingIssues,
   setIssues,
@@ -19,6 +20,7 @@ import {
   setStatus,
 } from "../../redux/reducers/filterSlice";
 import AssigneeFilterDropdown from "./AssigneeFilter";
+import { setSelectedField } from "../../redux/reducers/fieldSlice";
 
 const DelayedTaskForm = () => {
   const { projectStatuses, project } = useSelector((state) => state.filters);
@@ -27,12 +29,23 @@ const DelayedTaskForm = () => {
   const [dateField, setDateField] = useState([]);
   const [assignees, setAssignees] = useState([]);
   const [assigneeNames, setAssigneeNames] = useState([]);
-
+  const [showUserField, setShowUserField] = useState(false);
   const startDate = watch("startDate");
   const endDate = watch("endDate");
   const status = watch("status");
   const endDateStatus = watch("endDateStatus");
-
+  const [customFields, setCustomFields] = useState([
+    {
+      "id": "customfield_10059",
+      "name": "Developer"
+    }, {
+      "id": "customfield_10063",
+      "name": "Imp Assignee"
+    }, {
+      "id": "customfield_10060",
+      "name": "QA",
+    }]);
+  const [selectedFields, setSelectedFields] = useState({});
   const isFormFilled = startDate || endDate || status || endDateStatus;
 
   useEffect(() => {
@@ -79,7 +92,12 @@ const DelayedTaskForm = () => {
       dispatch(setEndDate(data.endDate));
       dispatch(setStatus(data.status));
       dispatch(setStartDate(data.startDate));
+      dispatch(setSelectedField(selectedFields));
       dispatch(setIssuesFetched(true));
+      if (project !== "HBM") {
+        dispatch(setSelectedField({}));
+      }
+
     } catch (error) {
       console.error(error);
     }
@@ -117,6 +135,31 @@ const DelayedTaskForm = () => {
     }
   }, [project]);
 
+  const handleFieldChange = (e) => {
+    const { name, checked } = e.target;
+    setSelectedFields((prevState) => ({
+      ...prevState,
+      [name]: checked,
+    }));
+
+    dispatch(setSelectedFields({
+      ...selectedFields,
+      [name]: checked,
+    }));
+  };
+
+  const handleClickOutside = useCallback((event) => {
+    if (event.target.closest('.dropdown-container') === null) {
+      setShowUserField(false);
+    }
+  }, []);
+  useEffect(() => {
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [handleClickOutside]);
+
   return (
 
     <form
@@ -135,7 +178,7 @@ const DelayedTaskForm = () => {
             required: "Start Date is required",
           })}
           type="date"
-          className=" w-full p-1.5 border rounded-lg focus:outline-none border-gray-300"
+          className=" w-full p-1 border rounded-lg focus:outline-none border-gray-300 border-b border-b-red-400 cursor-pointer"
         />
       </div>
       <div className="flex items-center justify-center p-0.5">
@@ -146,14 +189,14 @@ const DelayedTaskForm = () => {
           id="endDate"
           {...register("endDate", { required: "End Date is required" })}
           type="date"
-          className="w-full p-1.5 border rounded-lg focus:outline-none border-gray-300"
+          className="w-full p-1 border rounded-lg focus:outline-none border-gray-300 border-b border-b-red-400 cursor-pointer"
         />
       </div>
       <div className="w-[120px]">
         <select
           id="status"
           {...register("status", { required: "Status is required" })}
-          className="w-full p-1 focus:outline-none border-gray-300"
+          className="w-full p-1 focus:outline-none border-gray-300 border-b border-b-red-400 cursor-pointer"
         >
           <option value="">Lookup Status</option>
           {projectStatuses &&
@@ -170,7 +213,7 @@ const DelayedTaskForm = () => {
           {...register("endDateStatus", {
             required: "End Date Status is required",
           })}
-          className="w-full p-1  focus:outline-none "
+          className="w-full p-1 focus:outline-none border-b border-b-red-400 cursor-pointer"
         >
           <option value="">Lookup Date</option>
           {dateField &&
@@ -182,10 +225,41 @@ const DelayedTaskForm = () => {
             ))}
         </select>
       </div>
+      {project == "HBM" && (
+        <div className="relative dropdown-container">
+          <button
+            onClick={() => setShowUserField((prev) => !prev)}
+            className="text-sm font-bold px-3 py-1 text-left rounded-lg focus:outline-none flex items-center w-full whitespace-nowrap cursor-pointer border-b border-b-gray-300"
+            type="button"
+            title={"Select the user fields you'd like to display"}
+          >
+            <span className="flex items-center text-gray-700">Select Fields <MdKeyboardArrowDown /></span>
+          </button>
+          {showUserField && (
+            <div className="absolute right-0 z-30 mt-2 w-48 bg-white border rounded-lg shadow-lg p-3 max-h-40 overflow-y-auto">
+              <div>
+                {customFields && customFields.length > 0 && customFields.map((field) => (
+                  <label key={field.id} className="flex items-center mb-2 text-sm">
+                    <input
+                      type="checkbox"
+                      name={field.id}
+                      checked={selectedFields[field.id] || false}
+                      onChange={handleFieldChange}
+                      className="mr-2 w-4 h-4"
+                    />
+                    {field.name}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
 
       <button
         type="submit"
-        className="bg-blue-600 text-white px-3 py-1 text-[13px] rounded-sm hover:bg-blue-700 disabled:bg-blue-500"
+        className="bg-blue-600 text-white px-3 py-1 text-[13px] rounded-sm hover:bg-blue-600 disabled:bg-blue-400"
         disabled={!isFormFilled}
       >
         Generate
@@ -201,11 +275,9 @@ const DelayedTaskForm = () => {
           </button>
         </div>
       )}
-      <div className="relative group w-5">
-        <IoInformationCircleOutline size={20} className="cursor-pointer" />
-        <Tooltip
-          text={`"Lookup Status" represents the status you want to verify, while "Lookup Date" is the field you want to compare it against. For example, if you select "Dev Completed" as the Lookup Status and "Dev End Date" as the Lookup Date, the report will show all tasks that transitioned to "Dev Completed" (within the selected date range) after the specified "Dev End Date."`}
-        />
+      <div className="relative group w-2">
+        <IoInformationCircleOutline size={20} className="cursor-pointer"
+          title={`"Lookup Status" represents the status you want to verify, while "Lookup Date" is the field you want to compare it against. For example, if you select "Dev Completed" as the Lookup Status and "Dev End Date" as the Lookup Date, the report will show all tasks that transitioned to "Dev Completed" (within the selected date range) after the specified "Dev End Date."`} />
       </div>
     </form>
 

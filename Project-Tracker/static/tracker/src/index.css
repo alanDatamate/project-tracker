@@ -42,3 +42,26 @@
   animation: modalSlideUp 0.3s ease-in forwards;
 }
 
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px; 
+  height: 4px; 
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Light background for the scrollbar track */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #888; /* Darker color for the scrollbar thumb */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Change thumb color on hover */
+}
+
+.highlight {
+  font-weight: bold;          
+  color: #e74c3c;          
+}
